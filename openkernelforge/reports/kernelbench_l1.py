@@ -107,6 +107,7 @@ def run_kernelbench_l1_check(config_path: str | Path, kernelbench_dir: str | Pat
                     separate_compile_time=config.benchmark.separate_compile_time,
                     stable_session_threshold=config.benchmark.stable_session_threshold,
                     enable_torch_compile=config.benchmark.enable_torch_compile,
+                    torch_compile_mode=config.benchmark.torch_compile_mode,
                 )
                 benchmark_dict = _benchmark_to_dict(benchmark)
                 record["benchmark_summary"] = _benchmark_summary(benchmark_dict)
@@ -132,6 +133,7 @@ def run_kernelbench_l1_check(config_path: str | Path, kernelbench_dir: str | Pat
             "cache_flush_enabled": config.benchmark.cache_flush.enabled,
             "bootstrap_ci_enabled": config.benchmark.bootstrap_ci.enabled,
             "torch_compile_enabled": config.benchmark.enable_torch_compile,
+            "torch_compile_mode": config.benchmark.torch_compile_mode,
         },
     }
     (run_dir / "kernelbench_l1_check.json").write_text(json.dumps(data, indent=2) + "\n")
@@ -273,6 +275,7 @@ def _benchmark_summary(benchmark: dict[str, Any]) -> dict[str, Any]:
         "device": benchmark.get("device"),
         "eager_median_ms": eager.get("median_ms"),
         "torch_compile_median_ms": compiled.get("median_ms"),
+        "torch_compile_mode": benchmark.get("torch_compile_mode"),
         "timing_mode": benchmark.get("timing_mode"),
         "warmup": benchmark.get("warmup"),
         "repeat": benchmark.get("repeats"),

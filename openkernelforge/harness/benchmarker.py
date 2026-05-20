@@ -15,7 +15,7 @@ from openkernelforge.harness.timing import CudaEventTimer, WallClockTimer, summa
 from openkernelforge.tasks.base import KernelTask, Shape
 from openkernelforge.utils.gpu import dtype_from_name, resolve_device
 
-_TORCH_COMPILE_CACHE: dict[tuple[int, str], Callable[..., Any]] = {}
+_TORCH_COMPILE_CACHE: dict[tuple[int, str, str], Callable[..., Any]] = {}
 
 
 @dataclass
@@ -65,6 +65,7 @@ class BenchmarkResult:
     across_session_iqr: float | None = None
     stable_above_eager: bool | None = None
     stable_above_compile: bool | None = None
+    torch_compile_mode: str | None = None
 
 
 def benchmark_task(
@@ -84,6 +85,7 @@ def benchmark_task(
     separate_compile_time: bool = True,
     stable_session_threshold: float = 0.98,
     enable_torch_compile: bool = False,
+    torch_compile_mode: str | None = None,
 ) -> BenchmarkResult:
     selected_shape = shape or task.benchmark_shapes[0]
     selected_dtype = dtype_from_name(dtype) if isinstance(dtype, str) else (dtype or task.allowed_dtypes[0])
@@ -101,6 +103,7 @@ def benchmark_task(
         repeats=repeats,
         independent_sessions=max(1, int(independent_sessions)),
         cache_flush_enabled=bool(_config_value(cache_flush_config, "enabled", False)),
+        torch_compile_mode=torch_compile_mode,
     )
 
     try:
@@ -153,6 +156,7 @@ def benchmark_task(
                         cache_flusher=cache_flusher,
                         bootstrap_ci_config=bootstrap_ci_config,
                         separate_compile_time=separate_compile_time,
+                        torch_compile_mode=torch_compile_mode,
                     )
                     if compile_time_ms is not None:
                         compile_times.append(float(compile_time_ms))
@@ -243,15 +247,17 @@ def _benchmark_torch_compile(
     cache_flusher: CudaCacheFlusher,
     bootstrap_ci_config: Any | None,
     separate_compile_time: bool,
+    torch_compile_mode: str | None,
 ) -> tuple[RuntimeStats | None, float | None]:
     if not hasattr(torch, "compile"):
         return None, None
-    cache_key = (id(fn), str(device))
+    cache_key = (id(fn), str(device), str(torch_compile_mode or "default"))
     compiled = _TORCH_COMPILE_CACHE.get(cache_key)
     compile_time_ms: float | None = None
     if compiled is None:
         start = time.perf_counter()
-        compiled = torch.compile(fn)
+        compile_kwargs = {"mode": torch_compile_mode} if torch_compile_mode else {}
+        compiled = torch.compile(fn, **compile_kwargs)
         compile_time_ms = (time.perf_counter() - start) * 1000.0 if separate_compile_time else None
         _TORCH_COMPILE_CACHE[cache_key] = compiled
     return (

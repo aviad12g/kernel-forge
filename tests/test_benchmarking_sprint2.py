@@ -76,6 +76,40 @@ def test_rigorous_small_config_loads():
     assert config.benchmark.independent_sessions == 3
 
 
+def test_rigorous_gemini_fused8_config_loads():
+    config = load_config("configs/gemini_fused8_gpu_baseline_rigorous.yaml")
+    assert len(config.tasks) == 8
+    assert config.agent.type == "llm"
+    assert config.agent.api_key_env == "GEMINI_API_KEY"
+    assert config.agent.max_attempts == 1
+    assert config.agent.candidates_per_attempt == 3
+    assert config.agent.stop_after_first_correct is False
+    assert config.agent.performance_search.enabled is False
+    assert config.benchmark.timing_mode == "cuda_event"
+    assert config.benchmark.repeats == 120
+    assert config.benchmark.independent_sessions == 3
+    assert config.benchmark.torch_compile_mode == "max-autotune"
+    assert config.benchmark.cache_flush.enabled is True
+    assert config.benchmark.bootstrap_ci.enabled is True
+
+
+def test_rigorous_openai_mini_fused8_config_loads():
+    config = load_config("configs/openai_mini_fused8_gpu_baseline_rigorous.yaml")
+    assert len(config.tasks) == 8
+    assert config.agent.type == "llm"
+    assert config.agent.model == "gpt-5.4-mini"
+    assert config.agent.api_key_env == "OPENAI_API_KEY"
+    assert config.agent.max_tokens is None
+    assert config.agent.temperature is None
+    assert config.agent.top_p is None
+    assert config.agent.extra_body["max_completion_tokens"] == 2048
+    assert config.agent.candidates_per_attempt == 3
+    assert config.agent.stop_after_first_correct is False
+    assert config.benchmark.timing_mode == "cuda_event"
+    assert config.benchmark.enable_torch_compile is True
+    assert config.benchmark.torch_compile_mode == "max-autotune"
+
+
 def test_benchmark_output_includes_timing_metadata():
     task = get_task("relu")
 

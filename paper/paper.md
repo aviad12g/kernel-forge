@@ -27,6 +27,7 @@ The reported results are from an internal fused8 benchmark, not KernelBench. Ker
 - Deterministic templates are a strong baseline and should be compared before model-generated kernels are treated as useful.
 - Template guidance can improve dataset usefulness without necessarily improving median performance.
 - Small local/open models can fail badly zero-shot; this is useful negative evidence but not a training conclusion.
+- Rigorous CUDA-event model reruns are configured for Gemini and OpenAI mini with 24 candidates per model, but only the deterministic template run has been rerun rigorously so far.
 
 ## Paper Structure
 

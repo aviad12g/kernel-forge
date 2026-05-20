@@ -69,6 +69,13 @@ The methodology check completed at `runs/20260520_145721` with `timing_mode=cuda
 
 The old 2076-candidate deterministic template table should now be treated as legacy timing. The LLM/OpenAI/Gemini model rows are still legacy timing until those model runs are rerun rigorously.
 
+Rigorous fused8 model configs now exist for Gemini and OpenAI mini:
+
+- `configs/gemini_fused8_gpu_baseline_rigorous.yaml`
+- `configs/openai_mini_fused8_gpu_baseline_rigorous.yaml`
+
+These configs use the same CUDA-event/cache-flush/three-session protocol as the rigorous deterministic template run, with 24 candidates per model. No rigorous model results are reported until the corresponding API keys are provided through environment variables and the runs complete.
+
 ## KernelBench L1 Pilot Status
 
 KernelBench L1 support is now at the adapter and baseline-validation stage. The command:

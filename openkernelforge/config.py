@@ -42,6 +42,7 @@ class BenchmarkConfig:
     device: str = "auto"
     max_shapes_per_task: int = 1
     enable_torch_compile: bool = False
+    torch_compile_mode: str | None = None
     cache_flush: CacheFlushBenchmarkConfig = field(default_factory=CacheFlushBenchmarkConfig)
     bootstrap_ci: BootstrapCIConfig = field(default_factory=BootstrapCIConfig)
     separate_compile_time: bool = True

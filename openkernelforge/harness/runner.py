@@ -1173,6 +1173,7 @@ def _benchmark_candidate(
             separate_compile_time=config.benchmark.separate_compile_time,
             stable_session_threshold=config.benchmark.stable_session_threshold,
             enable_torch_compile=config.benchmark.enable_torch_compile,
+            torch_compile_mode=config.benchmark.torch_compile_mode,
         )
         benchmarks.append(benchmark)
         if benchmark.benchmark_error:
@@ -1357,6 +1358,7 @@ def _benchmark_summary(benchmarks: list[dict[str, Any]]) -> dict[str, Any] | Non
         "eager_median_ms": eager.get("median_ms"),
         "candidate_median_ms": candidate.get("median_ms"),
         "torch_compile_median_ms": compiled.get("median_ms"),
+        "torch_compile_mode": benchmark.get("torch_compile_mode"),
         "timing_mode": benchmark.get("timing_mode"),
         "warmup": benchmark.get("warmup"),
         "repeat": benchmark.get("repeats"),

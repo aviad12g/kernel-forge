@@ -67,6 +67,7 @@ def collect_repeatability_results(
                     separate_compile_time=config.benchmark.separate_compile_time,
                     stable_session_threshold=config.benchmark.stable_session_threshold,
                     enable_torch_compile=config.benchmark.enable_torch_compile,
+                    torch_compile_mode=config.benchmark.torch_compile_mode,
                 )
                 if benchmark.benchmark_error:
                     errors.append(benchmark.benchmark_error)

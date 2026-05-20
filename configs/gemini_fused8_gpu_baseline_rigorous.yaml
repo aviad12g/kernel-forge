@@ -1,0 +1,58 @@
+tasks:
+  - bias_relu
+  - sigmoid_mul
+  - add_relu
+  - residual_add_relu
+  - bias_gelu
+  - row_sum
+  - layernorm_small
+  - rmsnorm_small
+output_dir: runs
+execution:
+  require_cuda: true
+  require_triton: true
+  require_tiny_triton_kernel: true
+agent:
+  type: llm
+  backend: openai_compatible
+  model: gemini-3.1-flash-lite
+  base_url: https://generativelanguage.googleapis.com/v1beta/openai/
+  api_key_env: GEMINI_API_KEY
+  max_attempts: 1
+  candidates_per_attempt: 3
+  stop_after_first_correct: false
+  benchmark_all_correct: true
+  allow_torch_fallback: false
+  temperature: 0.2
+  top_p: 0.95
+  max_tokens: 4096
+  timeout_seconds: 120
+  prompt_version: v2_task_skeletons
+  repair_prompt_version: v3_cuda_repair
+  performance_search:
+    enabled: false
+verification:
+  seeds: [0, 1]
+  dtype: float32
+  device: auto
+  max_shapes_per_task: 1
+benchmark:
+  enabled: true
+  timing_mode: cuda_event
+  warmup: 30
+  repeat: 120
+  independent_sessions: 3
+  torch_compile_mode: max-autotune
+  dtype: float32
+  device: auto
+  max_shapes_per_task: 1
+  include_torch_compile: true
+  cache_flush:
+    enabled: true
+    size_mb: 128
+    mode: write
+  bootstrap_ci:
+    enabled: true
+    samples: 1000
+    seed: 123
+  separate_compile_time: true
