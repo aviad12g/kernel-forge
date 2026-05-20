@@ -75,7 +75,7 @@ Repeatability changed several conclusions. In the three-task sandbox, single-run
 
 The benchmarker now supports explicit repeatability labels: `REPEAT_STABLE_WIN`, `SINGLE_RUN_ONLY_WIN`, `UNSTABLE`, `BELOW_EAGER`, and `INSUFFICIENT_DATA`. These labels are intentionally conservative. A single fast sample, or even a single-run task winner, is not sufficient to claim a kernel improvement unless independent measurement sessions preserve the win.
 
-Implementation status: CUDA-event timing, optional cache flushing, independent sessions, and richer sample summaries are implemented as an opt-in rigorous benchmark path. CPU tests pass. CUDA validation is pending in this local checkout because the available machine is CPU-only. The existing fused8 tables should be treated as legacy timing until a full rigorous rerun replaces them.
+Implementation status: CUDA-event timing, optional cache flushing, independent sessions, and richer sample summaries are implemented as an opt-in rigorous benchmark path. CPU tests pass. A RunPod RTX 5090 methodology check completed at `runs/20260520_145721` with CUDA-event timing, cache flushing performed, and three independent sessions. A small rigorous fused8 validation completed at `runs/20260520_145741` with 160/160 verified candidates. The existing full fused8 tables should still be treated as legacy timing until a full rigorous rerun replaces them.
 
 ### Stable Winners By Task
 

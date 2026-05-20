@@ -51,7 +51,7 @@ The central experimental result is that correctness became reliable before speed
 
 ## Rigorous Timing Status
 
-The fused8 results above are legacy timing results from the earlier benchmark path. The CUDA-event methodology is implemented, including optional cache flushing, independent sessions, median/IQR/CV summaries, and bootstrap intervals. In this local checkout, CUDA validation is still pending because the available machine is CPU-only. The next GPU validation step is:
+The fused8 results above are legacy timing results from the earlier benchmark path. The CUDA-event methodology is implemented, including optional cache flushing, independent sessions, median/IQR/CV summaries, and bootstrap intervals. It has now been sanity-checked on a RunPod RTX 5090:
 
 ```bash
 python -m openkernelforge.cli benchmark-methodology-check \
@@ -59,4 +59,6 @@ python -m openkernelforge.cli benchmark-methodology-check \
   --max-tasks 2
 ```
 
-After that, run `configs/template_fused8_gpu_benchmark_rigorous_small.yaml` on a CUDA RunPod. The current fused8 performance tables should not be updated until the full rigorous rerun is complete.
+The methodology check completed at `runs/20260520_145721` with `timing_mode=cuda_event`, cache flushing enabled and performed, and three independent sessions. A small fused8 validation run completed at `runs/20260520_145741` with 160/160 verified candidates and fused8/repeatability reports.
+
+The current fused8 performance tables should still be treated as legacy timing until the full fused8 rerun is complete. The small rigorous run validates the path, not the final benchmark table.

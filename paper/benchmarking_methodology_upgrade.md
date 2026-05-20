@@ -60,8 +60,8 @@ On CPU-only machines this exits cleanly with a skipped report. On CUDA machines 
 - CPU fallback and CPU tests: implemented and passing.
 - Optional CUDA cache flushing: implemented and reported when enabled.
 - Independent sessions and richer sample summaries: implemented.
-- CUDA methodology check: pending in this local checkout because the machine is CPU-only.
-- Rigorous small fused8 validation: config exists at `configs/template_fused8_gpu_benchmark_rigorous_small.yaml`; CUDA RunPod execution is pending.
+- CUDA methodology check: validated on a RunPod RTX 5090 run at `runs/20260520_145721`. The check completed with `timing_mode=cuda_event`, cache flushing enabled and performed, and three independent sessions.
+- Rigorous small fused8 validation: completed on RunPod at `runs/20260520_145741` using `configs/template_fused8_gpu_benchmark_rigorous_small.yaml`. It generated 160 candidates, verified 160/160, benchmarked 160, and wrote fused8 and repeatability reports.
 - Full fused8 rerun with rigorous timing: pending. Legacy fused8 tables should remain labeled as legacy timing until regenerated.
 
 ## Acceptance Criteria For A Claimed Win
