@@ -129,7 +129,7 @@ The most important result is not that one model wins. It is that correctness and
 
 ## 13. Next Work
 
-The next technical step is not training immediately. The project should first package the curated fused8 data, review stable-fast candidates manually, and compare a stronger local/open model such as Qwen 14B only after provisioning enough disk/cache. After that, move toward a small KernelBench L1 subset and prepare SFT data from repeat-stable targets and optimization pairs.
+The next technical step is not training immediately. The rigorous internal fused8 deterministic-template results are complete enough to support an external validation pilot. The project now includes a KernelBench L1 adapter and baseline-validation command that can load a local KernelBench-style directory, run PyTorch eager and optional `torch.compile` baselines, and write a pilot report. Candidate generation for KernelBench is intentionally deferred until task loading and baseline timing are validated. No KernelBench performance results are claimed yet.
 
 ## 14. Reproducibility Appendix
 

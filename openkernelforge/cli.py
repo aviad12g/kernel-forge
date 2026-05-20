@@ -22,6 +22,7 @@ from openkernelforge.reports.fused8_curation import (
     inspect_curated_fused8_dataset,
     validate_curated_fused8_dataset,
 )
+from openkernelforge.reports.kernelbench_l1 import run_kernelbench_l1_check
 from openkernelforge.reports.focused_sweep import (
     write_focused_sweep_report,
     write_focused_sweep_seed_analysis,
@@ -164,6 +165,13 @@ def main(argv: list[str] | None = None) -> int:
     )
     methodology_parser.add_argument("--config", required=True)
     methodology_parser.add_argument("--max-tasks", type=int, default=2)
+
+    kernelbench_parser = subparsers.add_parser(
+        "kernelbench-l1-check",
+        help="Validate KernelBench L1 task loading and rigorous baseline timing",
+    )
+    kernelbench_parser.add_argument("--config", required=True)
+    kernelbench_parser.add_argument("--kernelbench-dir", required=True)
 
     args = parser.parse_args(argv)
 
@@ -393,6 +401,17 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Benchmark methodology check written: {report_path}")
         preview_lines = report_path.read_text(encoding="utf-8").splitlines()[:24]
         print("\n".join(preview_lines))
+        return 0
+
+    if args.command == "kernelbench-l1-check":
+        report_path = run_kernelbench_l1_check(args.config, args.kernelbench_dir)
+        print(f"KernelBench L1 check written: {report_path}")
+        preview_lines = report_path.read_text(encoding="utf-8").splitlines()[:28]
+        print("\n".join(preview_lines))
+        json_path = Path(report_path).parent / "kernelbench_l1_check.json"
+        if json_path.exists():
+            status = json.loads(json_path.read_text(encoding="utf-8")).get("status")
+            return 0 if status in {"completed", "completed_with_failures"} else 1
         return 0
 
     parser.error(f"Unknown command: {args.command}")

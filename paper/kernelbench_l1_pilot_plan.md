@@ -25,14 +25,34 @@ Start with 20 KernelBench L1 tasks. Select tasks that:
 ## Protocol
 
 1. Import or adapt 20 KernelBench L1 tasks into OpenKernelForge.
-2. Run PyTorch eager and optional `torch.compile` baselines.
-3. Generate candidates with the existing OpenKernelForge model/template path.
+2. Run PyTorch eager and optional `torch.compile` baselines with the rigorous CUDA-event path.
+3. Validate task loading, input generation, tolerances, and baseline timing before candidate generation.
+4. Generate candidates with the existing OpenKernelForge model/template path in a later sprint.
 4. Apply static policy checks.
 5. Verify correctness against PyTorch references.
 6. Benchmark correct candidates with the upgraded CUDA-event methodology.
 7. Identify single-run winners.
 8. Repeat top-k candidates across independent measurement sessions.
 9. Report stable winners separately from unstable single-run winners.
+
+## Current Implementation Status
+
+The internal fused8 benchmark now has a rigorous CUDA-event deterministic-template run:
+
+- Run: `runs/20260520_155839`
+- Candidates: 160
+- Verified: 160/160
+- Repeat-stable wins: `residual_add_relu`, `bias_gelu`, `rmsnorm_small`
+
+The first KernelBench L1 sprint adds a local adapter and baseline-validation command only:
+
+```bash
+python -m openkernelforge.cli kernelbench-l1-check \
+  --config configs/kernelbench_l1_5task_rigorous.yaml \
+  --kernelbench-dir <path-to-kernelbench>
+```
+
+This command validates local KernelBench task loading, PyTorch eager references, optional `torch.compile`, and timing metadata. It does not run LLM generation. No KernelBench performance result should be claimed until real KernelBench tasks and candidates are evaluated.
 
 ## Primary Metric
 

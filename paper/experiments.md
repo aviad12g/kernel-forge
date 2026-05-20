@@ -68,3 +68,15 @@ python -m openkernelforge.cli benchmark-methodology-check \
 The methodology check completed at `runs/20260520_145721` with `timing_mode=cuda_event`, cache flushing enabled and performed, and three independent sessions. A small fused8 validation run completed at `runs/20260520_145741` with 160/160 verified candidates and fused8/repeatability reports. The full configured rigorous run completed at `runs/20260520_155839`.
 
 The old 2076-candidate deterministic template table should now be treated as legacy timing. The LLM/OpenAI/Gemini model rows are still legacy timing until those model runs are rerun rigorously.
+
+## KernelBench L1 Pilot Status
+
+KernelBench L1 support is now at the adapter and baseline-validation stage. The command:
+
+```bash
+python -m openkernelforge.cli kernelbench-l1-check \
+  --config configs/kernelbench_l1_5task_rigorous.yaml \
+  --kernelbench-dir <path-to-kernelbench>
+```
+
+loads a local KernelBench-style task directory, validates PyTorch references and input generation, and records eager/`torch.compile` baseline timing where configured. Candidate generation is intentionally out of scope for this first KernelBench sprint. There are no KernelBench performance results yet.

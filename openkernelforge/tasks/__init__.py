@@ -2,6 +2,7 @@
 
 from openkernelforge.tasks.base import KernelTask, TaskTolerance
 from openkernelforge.tasks.fused_tasks import get_fused_tasks
+from openkernelforge.tasks.kernelbench_l1 import load_kernelbench_l1_tasks
 from openkernelforge.tasks.simple_tasks import get_builtin_tasks, get_task, get_task_map
 
 __all__ = [
@@ -11,4 +12,5 @@ __all__ = [
     "get_fused_tasks",
     "get_task",
     "get_task_map",
+    "load_kernelbench_l1_tasks",
 ]
