@@ -1,0 +1,4 @@
+task,best_single_run_speedup_vs_eager,repeatability_outcome,final_conclusion
+vector_add,0.692,repeat median 0.483x,poor standalone target; launch overhead dominates
+relu,0.812,repeat median 0.512x,poor standalone target; use only as harness check
+bias_relu,1.017,repeat median 0.705x,single-run win was not stable; useful as fused-task seed

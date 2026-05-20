@@ -1,0 +1,32 @@
+tasks:
+  - vector_add
+  - elementwise_mul
+  - relu
+  - bias_relu
+  - sigmoid_mul
+  - row_sum
+  - layernorm_small
+  - matmul_bias
+output_dir: runs
+agent:
+  type: dummy
+  backend: fake
+  max_attempts: 3
+  candidates_per_attempt: 1
+  stop_after_first_correct: true
+  benchmark_all_correct: true
+  allow_torch_fallback: true
+  temperature: 0.2
+verification:
+  seeds: [0, 1, 2]
+  dtype: float32
+  device: auto
+  max_shapes_per_task: 1
+benchmark:
+  enabled: true
+  warmup: 5
+  repeats: 20
+  dtype: float32
+  device: auto
+  max_shapes_per_task: 1
+  enable_torch_compile: false

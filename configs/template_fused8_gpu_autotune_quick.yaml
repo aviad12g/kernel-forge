@@ -1,0 +1,58 @@
+tasks:
+  - bias_relu
+  - sigmoid_mul
+  - add_relu
+  - residual_add_relu
+  - bias_gelu
+  - row_sum
+  - layernorm_small
+  - rmsnorm_small
+output_dir: runs
+execution:
+  require_cuda: true
+  require_triton: true
+  require_tiny_triton_kernel: true
+agent:
+  type: template
+  backend: fake
+  allow_torch_fallback: false
+  benchmark_all_correct: true
+  template_family: fused8
+  template_variants:
+    generation_stage: template_fused8_quick
+    validate_variants: true
+    record_skipped_variants: true
+    block_sizes: [128, 256, 512, 1024, 2048, 4096]
+    num_warps: [1, 2, 4, 8]
+    num_stages: [3, 4]
+    contiguous_policies: ["none", "wrapper_contiguous"]
+    output_allocation_policies: ["torch.empty", "torch.empty_like"]
+    n_elements_modes: ["runtime", "constexpr"]
+    feature_dim_modes: ["runtime", "constexpr", "generic"]
+    max_variants_per_task: 50
+    grid_sampling: capped_ordered
+    sort_order: mixed
+    per_task:
+      row_sum: &reduction_grid
+        block_sizes: [1024, 2048, 4096]
+        reduction_block_sizes: [1024, 2048, 4096]
+        num_warps: [1, 2, 4, 8]
+        num_stages: [3, 4]
+        contiguous_policies: ["none", "wrapper_contiguous"]
+        output_allocation_policies: ["torch.empty"]
+        feature_dim_modes: ["constexpr"]
+      layernorm_small: *reduction_grid
+      rmsnorm_small: *reduction_grid
+verification:
+  seeds: [0, 1]
+  dtype: float32
+  device: auto
+  max_shapes_per_task: 1
+benchmark:
+  enabled: true
+  warmup: 5
+  repeat: 20
+  dtype: float32
+  device: auto
+  max_shapes_per_task: 1
+  include_torch_compile: true

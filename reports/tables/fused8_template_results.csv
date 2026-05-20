@@ -1,0 +1,9 @@
+task,best_single_run_speedup_vs_eager,repeat_median_speedup_vs_eager,above_eager_stable,above_torch_compile
+bias_relu,1.017,0.954,no,yes
+sigmoid_mul,1.065,0.865,no,yes
+add_relu,0.924,not above eager,no,yes
+residual_add_relu,1.378,1.168,yes,yes
+bias_gelu,1.697,1.657,yes,yes
+row_sum,0.801,not above eager,no,yes
+layernorm_small,0.843,not above eager,no,yes
+rmsnorm_small,2.227,1.802,yes,yes

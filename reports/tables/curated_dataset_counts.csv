@@ -1,0 +1,7 @@
+split,rows,intended_use,train_now
+correct_fast_repeat_stable.jsonl,19,reviewed SFT candidates after repeatability,not yet
+correct_fast_single_run.jsonl,623,analysis and candidate mining only,no
+correct_promising.jsonl,598,optimization or ranking data after review,no
+optimization_pairs_template_vs_gemini.jsonl,5,optimization training pairs,not yet
+optimization_pairs_gemini_vs_template.jsonl,3,optimization training pairs,not yet
+rejected_or_unstable.jsonl,898,failure analysis and negative examples,no

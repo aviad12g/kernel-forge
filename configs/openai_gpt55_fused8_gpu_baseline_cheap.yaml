@@ -1,0 +1,48 @@
+tasks:
+  - bias_relu
+  - sigmoid_mul
+  - add_relu
+  - residual_add_relu
+  - bias_gelu
+  - row_sum
+  - layernorm_small
+  - rmsnorm_small
+output_dir: runs
+execution:
+  require_cuda: true
+  require_triton: true
+  require_tiny_triton_kernel: true
+agent:
+  type: llm
+  backend: openai_compatible
+  provider: openai
+  api_mode: chat_completions
+  base_url: https://api.openai.com/v1
+  api_key_env: OPENAI_API_KEY
+  model: gpt-5.5
+  max_attempts: 1
+  candidates_per_attempt: 1
+  stop_after_first_correct: true
+  benchmark_all_correct: true
+  allow_torch_fallback: false
+  temperature: null
+  top_p: null
+  max_tokens: null
+  timeout_seconds: 120
+  extra_body:
+    max_completion_tokens: 2048
+  prompt_version: v2_task_skeletons
+  repair_prompt_version: v3_cuda_repair
+verification:
+  seeds: [0, 1]
+  dtype: float32
+  device: auto
+  max_shapes_per_task: 1
+benchmark:
+  enabled: true
+  warmup: 10
+  repeat: 50
+  dtype: float32
+  device: auto
+  max_shapes_per_task: 1
+  include_torch_compile: true

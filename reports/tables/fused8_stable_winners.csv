@@ -1,0 +1,9 @@
+task,stable_winner,source_type,repeat_median_speedup_vs_eager,interpretation
+bias_relu,none confirmed above eager,n/a,n/a,single-run wins were not repeat-stable
+sigmoid_mul,none confirmed above eager,n/a,n/a,single-run win did not hold above eager
+add_relu,none confirmed above eager,n/a,n/a,near-eager only
+residual_add_relu,Gemini template-guided,llm_template_guided,1.234,LLM-guided run produced the stable winner
+bias_gelu,deterministic template,template,1.657,strong repeat-stable deterministic template win
+row_sum,none confirmed above eager,n/a,n/a,below eager in current protocol
+layernorm_small,none confirmed above eager,n/a,n/a,below eager in current protocol
+rmsnorm_small,deterministic template,template,1.802,strong repeat-stable deterministic template win
