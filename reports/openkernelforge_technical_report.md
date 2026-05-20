@@ -47,22 +47,25 @@ Provenance note: the latest RunPod fused8 artifacts are not present in this loca
 
 ### Fused8 Deterministic Template Results
 
+These are the current paper-facing deterministic-template numbers from the rigorous CUDA-event run `runs/20260520_155839`. The older 2076-candidate template-wide table remains useful as historical search evidence, but should be labeled legacy timing.
+
 | Task | Best single-run | Repeat median | Stable above eager | Above torch.compile |
 | --- | --- | --- | --- | --- |
-| bias_relu | 1.017 | 0.954 | no | yes |
-| sigmoid_mul | 1.065 | 0.865 | no | yes |
-| add_relu | 0.924 | not above eager | no | yes |
-| residual_add_relu | 1.378 | 1.168 | yes | yes |
-| bias_gelu | 1.697 | 1.657 | yes | yes |
-| row_sum | 0.801 | not above eager | no | yes |
-| layernorm_small | 0.843 | not above eager | no | yes |
-| rmsnorm_small | 2.227 | 1.802 | yes | yes |
+| bias_relu | 1.029 | 0.976 | no | yes |
+| sigmoid_mul | 0.998 | 0.934 | no | yes |
+| add_relu | 0.947 | 0.938 | no | yes |
+| residual_add_relu | 1.140 | 1.023 | yes | yes |
+| bias_gelu | 1.473 | 1.485 | yes | yes |
+| row_sum | 0.790 | 0.674 | no | yes |
+| layernorm_small | 0.843 | 0.791 | no | yes |
+| rmsnorm_small | 1.674 | 1.452 | yes | yes |
 
 ### Model Comparison
 
 | Baseline | Candidates | Verified | Median eager speedup | Tasks above eager | Repeat-stable wins | Conclusion |
 | --- | --- | --- | --- | --- | --- | --- |
-| deterministic templates | 2076 | 2076/2076 | 0.862 | 5/8 single-run | residual_add_relu, bias_gelu, rmsnorm_small | strongest overall floor; repeatability required |
+| deterministic templates rigorous CUDA-event | 160 | 160/160 | 0.945 | 4/8 single-run | residual_add_relu, bias_gelu, rmsnorm_small | current paper-facing deterministic template table; capped rigorous grid |
+| deterministic templates legacy timing | 2076 | 2076/2076 | 0.862 | 5/8 single-run | residual_add_relu, bias_gelu, rmsnorm_small | historical wide search; keep as legacy timing |
 | Gemini fused8 baseline | 28 | 28/28 | 0.933 | 4/8 single-run | competitive but not final stable winner in provided summary | strong zero-shot correctness and competitive speed |
 | Gemini template-guided | 34 | 34/34 | 0.798 | 4/8 single-run | residual_add_relu | useful optimization data; median performance regressed |
 | OpenAI mini cheap | 8 | 8/8 | 0.882 | 3/8 single-run | residual_add_relu, bias_gelu, rmsnorm_small | cheap and competitive; not clearly above Gemini |
@@ -75,20 +78,20 @@ Repeatability changed several conclusions. In the three-task sandbox, single-run
 
 The benchmarker now supports explicit repeatability labels: `REPEAT_STABLE_WIN`, `SINGLE_RUN_ONLY_WIN`, `UNSTABLE`, `BELOW_EAGER`, and `INSUFFICIENT_DATA`. These labels are intentionally conservative. A single fast sample, or even a single-run task winner, is not sufficient to claim a kernel improvement unless independent measurement sessions preserve the win.
 
-Implementation status: CUDA-event timing, optional cache flushing, independent sessions, and richer sample summaries are implemented as an opt-in rigorous benchmark path. CPU tests pass. A RunPod RTX 5090 methodology check completed at `runs/20260520_145721` with CUDA-event timing, cache flushing performed, and three independent sessions. A small rigorous fused8 validation completed at `runs/20260520_145741` with 160/160 verified candidates. The existing full fused8 tables should still be treated as legacy timing until a full rigorous rerun replaces them.
+Implementation status: CUDA-event timing, optional cache flushing, independent sessions, and richer sample summaries are implemented as an opt-in rigorous benchmark path. CPU tests pass. A RunPod RTX 5090 methodology check completed at `runs/20260520_145721` with CUDA-event timing, cache flushing performed, and three independent sessions. The configured rigorous fused8 run completed at `runs/20260520_155839` with 160/160 verified candidates. The deterministic template table above is now rigorous CUDA-event timing; the LLM/OpenAI/Gemini rows remain legacy timing until rerun.
 
 ### Stable Winners By Task
 
 | Task | Stable winner | Source type | Repeat median | Interpretation |
 | --- | --- | --- | --- | --- |
-| bias_relu | none confirmed above eager | n/a | n/a | single-run wins were not repeat-stable |
-| sigmoid_mul | none confirmed above eager | n/a | n/a | single-run win did not hold above eager |
-| add_relu | none confirmed above eager | n/a | n/a | near-eager only |
-| residual_add_relu | Gemini template-guided | llm_template_guided | 1.234 | LLM-guided run produced the stable winner |
-| bias_gelu | deterministic template | template | 1.657 | strong repeat-stable deterministic template win |
-| row_sum | none confirmed above eager | n/a | n/a | below eager in current protocol |
-| layernorm_small | none confirmed above eager | n/a | n/a | below eager in current protocol |
-| rmsnorm_small | deterministic template | template | 1.802 | strong repeat-stable deterministic template win |
+| bias_relu | none confirmed above eager | n/a | 0.976 | single-run win remains below eager on repeat |
+| sigmoid_mul | none confirmed above eager | n/a | 0.934 | near-eager but below eager on repeat |
+| add_relu | none confirmed above eager | n/a | 0.938 | near-eager but below eager on repeat |
+| residual_add_relu | deterministic template | template | 1.023 | repeat-stable deterministic template win under rigorous timing |
+| bias_gelu | deterministic template | template | 1.485 | strong repeat-stable deterministic template win |
+| row_sum | none confirmed above eager | n/a | 0.674 | below eager under rigorous timing |
+| layernorm_small | none confirmed above eager | n/a | 0.791 | below eager under rigorous timing |
+| rmsnorm_small | deterministic template | template | 1.452 | strong repeat-stable deterministic template win |
 
 ## 9. Dataset Curation
 

@@ -1,9 +1,9 @@
-task,stable_winner,source_type,repeat_median_speedup_vs_eager,interpretation
-bias_relu,none confirmed above eager,n/a,n/a,single-run wins were not repeat-stable
-sigmoid_mul,none confirmed above eager,n/a,n/a,single-run win did not hold above eager
-add_relu,none confirmed above eager,n/a,n/a,near-eager only
-residual_add_relu,Gemini template-guided,llm_template_guided,1.234,LLM-guided run produced the stable winner
-bias_gelu,deterministic template,template,1.657,strong repeat-stable deterministic template win
-row_sum,none confirmed above eager,n/a,n/a,below eager in current protocol
-layernorm_small,none confirmed above eager,n/a,n/a,below eager in current protocol
-rmsnorm_small,deterministic template,template,1.802,strong repeat-stable deterministic template win
+task,stable_winner,source_type,repeat_median_speedup_vs_eager,interpretation,timing_source,run_dir
+bias_relu,none confirmed above eager,n/a,0.976,single-run win remains below eager on repeat,rigorous_cuda_event,runs/20260520_155839
+sigmoid_mul,none confirmed above eager,n/a,0.934,near-eager but below eager on repeat,rigorous_cuda_event,runs/20260520_155839
+add_relu,none confirmed above eager,n/a,0.938,near-eager but below eager on repeat,rigorous_cuda_event,runs/20260520_155839
+residual_add_relu,deterministic template,template,1.023,repeat-stable deterministic template win,rigorous_cuda_event,runs/20260520_155839
+bias_gelu,deterministic template,template,1.485,strong repeat-stable deterministic template win,rigorous_cuda_event,runs/20260520_155839
+row_sum,none confirmed above eager,n/a,0.674,below eager under rigorous timing,rigorous_cuda_event,runs/20260520_155839
+layernorm_small,none confirmed above eager,n/a,0.791,below eager under rigorous timing,rigorous_cuda_event,runs/20260520_155839
+rmsnorm_small,deterministic template,template,1.452,strong repeat-stable deterministic template win,rigorous_cuda_event,runs/20260520_155839

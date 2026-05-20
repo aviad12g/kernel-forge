@@ -1,9 +1,9 @@
-task,best_single_run_speedup_vs_eager,repeat_median_speedup_vs_eager,above_eager_stable,above_torch_compile
-bias_relu,1.017,0.954,no,yes
-sigmoid_mul,1.065,0.865,no,yes
-add_relu,0.924,not above eager,no,yes
-residual_add_relu,1.378,1.168,yes,yes
-bias_gelu,1.697,1.657,yes,yes
-row_sum,0.801,not above eager,no,yes
-layernorm_small,0.843,not above eager,no,yes
-rmsnorm_small,2.227,1.802,yes,yes
+task,best_single_run_speedup_vs_eager,repeat_median_speedup_vs_eager,above_eager_stable,above_torch_compile,timing_source,run_dir
+bias_relu,1.029,0.976,no,yes,rigorous_cuda_event,runs/20260520_155839
+sigmoid_mul,0.998,0.934,no,yes,rigorous_cuda_event,runs/20260520_155839
+add_relu,0.947,0.938,no,yes,rigorous_cuda_event,runs/20260520_155839
+residual_add_relu,1.140,1.023,yes,yes,rigorous_cuda_event,runs/20260520_155839
+bias_gelu,1.473,1.485,yes,yes,rigorous_cuda_event,runs/20260520_155839
+row_sum,0.790,0.674,no,yes,rigorous_cuda_event,runs/20260520_155839
+layernorm_small,0.843,0.791,no,yes,rigorous_cuda_event,runs/20260520_155839
+rmsnorm_small,1.674,1.452,yes,yes,rigorous_cuda_event,runs/20260520_155839

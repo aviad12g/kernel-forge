@@ -27,11 +27,17 @@ These workloads are more appropriate for Triton than isolated elementwise kernel
 
 ## Deterministic Template Results
 
-The deterministic fused8 template wide run generated 2076 candidates and verified 2076/2076. Single-run bests beat eager on 5/8 tasks, but repeatability confirmed stable above-eager wins on 3 tasks:
+The legacy deterministic fused8 template wide run generated 2076 candidates and verified 2076/2076. Single-run bests beat eager on 5/8 tasks, but repeatability confirmed stable above-eager wins on 3 tasks:
 
 - `residual_add_relu`: 1.168x repeat median
 - `bias_gelu`: 1.657x repeat median
 - `rmsnorm_small`: 1.802x repeat median
+
+The current paper-facing deterministic template table uses the rigorous CUDA-event run `runs/20260520_155839`. That run used a capped 160-candidate grid with CUDA events, cache flushing, bootstrap intervals, and three independent sessions. It verified 160/160 candidates, had median speedup 0.945x vs eager, and repeated stable above-eager wins on:
+
+- `residual_add_relu`: 1.023x repeat median
+- `bias_gelu`: 1.485x repeat median
+- `rmsnorm_small`: 1.452x repeat median
 
 ## Model Results
 
@@ -51,7 +57,7 @@ The central experimental result is that correctness became reliable before speed
 
 ## Rigorous Timing Status
 
-The fused8 results above are legacy timing results from the earlier benchmark path. The CUDA-event methodology is implemented, including optional cache flushing, independent sessions, median/IQR/CV summaries, and bootstrap intervals. It has now been sanity-checked on a RunPod RTX 5090:
+The model results above remain legacy timing unless explicitly rerun with the rigorous path. The deterministic template results have a new rigorous CUDA-event run. The CUDA-event methodology is implemented, including optional cache flushing, independent sessions, median/IQR/CV summaries, and bootstrap intervals. It was sanity-checked on a RunPod RTX 5090:
 
 ```bash
 python -m openkernelforge.cli benchmark-methodology-check \
@@ -59,6 +65,6 @@ python -m openkernelforge.cli benchmark-methodology-check \
   --max-tasks 2
 ```
 
-The methodology check completed at `runs/20260520_145721` with `timing_mode=cuda_event`, cache flushing enabled and performed, and three independent sessions. A small fused8 validation run completed at `runs/20260520_145741` with 160/160 verified candidates and fused8/repeatability reports.
+The methodology check completed at `runs/20260520_145721` with `timing_mode=cuda_event`, cache flushing enabled and performed, and three independent sessions. A small fused8 validation run completed at `runs/20260520_145741` with 160/160 verified candidates and fused8/repeatability reports. The full configured rigorous run completed at `runs/20260520_155839`.
 
-The current fused8 performance tables should still be treated as legacy timing until the full fused8 rerun is complete. The small rigorous run validates the path, not the final benchmark table.
+The old 2076-candidate deterministic template table should now be treated as legacy timing. The LLM/OpenAI/Gemini model rows are still legacy timing until those model runs are rerun rigorously.
