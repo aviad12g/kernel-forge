@@ -43,7 +43,7 @@ artifacts/
 
 | Artifact | RunPod source path | Intended local path | Required | Why it matters | Expected key files |
 | --- | --- | --- | --- | --- | --- |
-| Final fused8 conclusion | `/workspace/openkernelforge/runs/fused8_phase11_conclusion.md` | `artifacts/reports/fused8_phase11_conclusion.md` | yes | Final Phase 11 interpretation. | Markdown report |
+| Final fused8 conclusion | `/workspace/openkernelforge/runs/fused8_phase11_conclusion.md` | `artifacts/reports/fused8_phase11_conclusion.md` | yes | Final fused8 interpretation. | Markdown report |
 | Repeatability comparison | `/workspace/openkernelforge/runs/fused8_repeatability_comparison.md` | `artifacts/reports/fused8_repeatability_comparison.md` | yes | Stable winner comparison across template/Gemini runs. | Markdown report |
 | Gemini vs template comparison | `/workspace/openkernelforge/runs/fused8_gemini_vs_template_comparison.md` | `artifacts/reports/fused8_gemini_vs_template_comparison.md` | optional | Useful if present for model-vs-template summary. | Markdown report |
 | All-model comparison | `/workspace/openkernelforge/runs/fused8_all_model_comparison.md` | `artifacts/reports/fused8_all_model_comparison.md` | optional | Useful if present for final comparison across all model families. | Markdown report |

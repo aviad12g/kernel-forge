@@ -2,8 +2,8 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 *.egg-info/
-runs/
-datasets/
-artifacts/
+/runs/
+/datasets/
+/artifacts/
 environment_probe.json
 .DS_Store

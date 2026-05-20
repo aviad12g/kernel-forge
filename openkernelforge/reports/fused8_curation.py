@@ -356,7 +356,7 @@ def write_fused8_phase11_conclusion(
     dataset_dir: str | Path,
     out: str | Path = "runs/fused8_phase11_conclusion.md",
 ) -> Path:
-    """Write the Phase 11 fused8 conclusion report."""
+    """Write the final fused8 conclusion report."""
 
     runs = _load_named_runs(template_run, gemini_run, template_guided_run)
     summaries = {label: _run_summary(data["bundle"]) for label, data in runs.items()}
@@ -365,7 +365,7 @@ def write_fused8_phase11_conclusion(
     manifest_path = Path(dataset_dir) / "manifest.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8")) if manifest_path.exists() else {}
     lines = [
-        "# OpenKernelForge Fused8 Phase 11 Conclusion",
+        "# OpenKernelForge Fused8 Conclusion",
         "",
         "This is an internal fused8 benchmark only. It is not KernelBench and it is not a SOTA claim.",
         "Repeatability matters: single-run speedups are treated as candidates for review, not final wins.",

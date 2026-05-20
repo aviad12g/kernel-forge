@@ -48,7 +48,7 @@ def test_phase14_scripts_return_success(tmp_path, capsys):
     assert build_script.build_report_main(["--root", str(tmp_path)]) == 0
     assert check_script.check_artifacts_main(["--root", str(tmp_path)]) == 0
     out = capsys.readouterr().out
-    assert "Generated Phase 14 artifacts" in out
+    assert "Generated research artifacts" in out
     assert "Artifact check passed" in out
 
 

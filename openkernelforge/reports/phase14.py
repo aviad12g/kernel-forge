@@ -1,4 +1,4 @@
-"""Phase 14 research report and reproducibility artifact generation."""
+"""Research report and reproducibility artifact generation."""
 
 from __future__ import annotations
 
@@ -183,13 +183,13 @@ ARTIFACTS = [
         "final fused8 conclusion",
         "/workspace/openkernelforge/runs/fused8_phase11_conclusion.md",
         "runs/fused8_phase11_conclusion.md",
-        "Phase 11 conclusion report",
+        "final fused8 conclusion report",
     ),
 ]
 
 
 def build_phase14_report(root: str | Path = ".") -> list[Path]:
-    """Generate Phase 14 Markdown reports and CSV source tables."""
+    """Generate research Markdown reports and CSV source tables."""
 
     root_path = Path(root)
     reports = root_path / "reports"
@@ -208,7 +208,7 @@ def build_phase14_report(root: str | Path = ".") -> list[Path]:
 
 
 def check_research_artifacts(root: str | Path = ".") -> tuple[bool, list[str], list[str]]:
-    """Validate that Phase 14 research artifacts exist and tables parse."""
+    """Validate that research artifacts exist and tables parse."""
 
     root_path = Path(root)
     errors: list[str] = []
@@ -253,7 +253,7 @@ def check_research_artifacts(root: str | Path = ".") -> tuple[bool, list[str], l
 
 
 def check_artifacts_main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Check Phase 14 research artifacts.")
+    parser = argparse.ArgumentParser(description="Check OpenKernelForge research artifacts.")
     parser.add_argument("--root", default=".")
     args = parser.parse_args(argv)
     ok, errors, warnings = check_research_artifacts(args.root)
@@ -271,11 +271,11 @@ def check_artifacts_main(argv: list[str] | None = None) -> int:
 
 
 def build_report_main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Build Phase 14 reports and CSV tables.")
+    parser = argparse.ArgumentParser(description="Build OpenKernelForge reports and CSV tables.")
     parser.add_argument("--root", default=".")
     args = parser.parse_args(argv)
     written = build_phase14_report(args.root)
-    print("Generated Phase 14 artifacts:")
+    print("Generated research artifacts:")
     for path in written:
         print(f"- {path}")
     return 0
@@ -619,7 +619,7 @@ def _artifact_index(root: Path) -> str:
         ("artifact index", "reports/artifact_index.md"),
         ("CSV tables", "reports/tables/"),
     ]
-    lines.extend(["", "## Generated Phase 14 Artifacts", ""])
+    lines.extend(["", "## Generated Research Artifacts", ""])
     for label, path in generated:
         status = "present" if (root / path).exists() or path == "reports/artifact_index.md" else "not present in this workspace"
         lines.append(f"- {label}: `{path}` - {status}")

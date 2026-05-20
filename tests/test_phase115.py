@@ -113,7 +113,7 @@ def test_fused8_conclusion_report_generated_from_synthetic_summaries(tmp_path, m
         out=tmp_path / "conclusion.md",
     )
     text = report.read_text(encoding="utf-8")
-    assert "Fused8 Phase 11 Conclusion" in text
+    assert "Fused8 Conclusion" in text
     assert "not KernelBench" in text
     assert "Curated Dataset Counts" in text
 

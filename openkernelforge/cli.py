@@ -358,7 +358,7 @@ def main(argv: list[str] | None = None) -> int:
         )
         print(f"Curated fused8 dataset written: {out_path}")
         print("Repeatability comparison written: runs/fused8_repeatability_comparison.md")
-        print("Phase 11 conclusion written: runs/fused8_phase11_conclusion.md")
+        print("Fused8 conclusion written: runs/fused8_phase11_conclusion.md")
         manifest_path = out_path / "manifest.json"
         if manifest_path.exists():
             manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
