@@ -13,6 +13,7 @@ from openkernelforge.config import RunConfig, load_config
 from openkernelforge.datasets.export import export_dataset, validate_dataset
 from openkernelforge.harness.runner import run_from_config
 from openkernelforge.reports.analyze import analyze_run
+from openkernelforge.reports.benchmark_methodology import run_benchmark_methodology_check
 from openkernelforge.reports.compare import compare_runs_markdown
 from openkernelforge.reports.gpu_debrief import debrief_gpu_run
 from openkernelforge.reports.fused8 import write_fused8_report
@@ -156,6 +157,13 @@ def main(argv: list[str] | None = None) -> int:
         "validate-curated-fused8", help="Validate curated fused8 split integrity"
     )
     validate_curated_parser.add_argument("--dataset-dir", required=True)
+
+    methodology_parser = subparsers.add_parser(
+        "benchmark-methodology-check",
+        help="Run a tiny CUDA-event benchmark methodology sanity check",
+    )
+    methodology_parser.add_argument("--config", required=True)
+    methodology_parser.add_argument("--max-tasks", type=int, default=2)
 
     args = parser.parse_args(argv)
 
@@ -379,6 +387,13 @@ def main(argv: list[str] | None = None) -> int:
         for error in errors[:20]:
             print(f"- {error}")
         return 0 if ok else 1
+
+    if args.command == "benchmark-methodology-check":
+        report_path = run_benchmark_methodology_check(args.config, max_tasks=args.max_tasks)
+        print(f"Benchmark methodology check written: {report_path}")
+        preview_lines = report_path.read_text(encoding="utf-8").splitlines()[:24]
+        print("\n".join(preview_lines))
+        return 0
 
     parser.error(f"Unknown command: {args.command}")
     return 2

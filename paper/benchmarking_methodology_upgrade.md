@@ -1,12 +1,12 @@
 # Benchmarking Methodology Upgrade Plan
 
-This is a plan for the next measurement sprint. It is not yet implemented as the default benchmark path.
+This document defines the upgraded measurement path. It is implemented as an opt-in benchmark mode and is not yet the default for all legacy configs.
 
 ## Goals
 
 The benchmarker should reduce false performance wins and make timing evidence strong enough for a KernelBench L1 repeatability study.
 
-## Planned Methodology
+## Methodology
 
 1. Use `torch.cuda.Event` timing for GPU kernels.
 2. Run warmup iterations before measurement.
@@ -19,13 +19,17 @@ The benchmarker should reduce false performance wins and make timing evidence st
 9. Repeat top-k candidates across independent measurement sessions.
 10. Mark unstable wins separately from repeat-stable wins.
 
+The wall-clock timer remains available for CPU tests and development. Real CUDA/Triton performance reports should prefer CUDA-event timing because host-side wall-clock timing can mix kernel runtime with dispatch latency, Python scheduling, and synchronization behavior.
+
 ## Report Fields
 
-Future reports should include:
+Rigorous benchmark reports include:
 
 - candidate median runtime
 - IQR
 - min/max
+- standard deviation
+- coefficient of variation
 - number of samples
 - number of warmup iterations
 - independent session count
@@ -35,6 +39,30 @@ Future reports should include:
 - stable-win label
 - single-run-only label
 - torch.compile baseline runtime if available
+- cache flush enabled/performed
+- compile-time measurement or a warning when unavailable
+
+## Methodology Check
+
+The sanity-check command exercises the rigorous path on a tiny subset:
+
+```bash
+python -m openkernelforge.cli benchmark-methodology-check \
+  --config configs/template_fused8_gpu_benchmark_rigorous.yaml \
+  --max-tasks 2
+```
+
+On CPU-only machines this exits cleanly with a skipped report. On CUDA machines it confirms CUDA-event timing, optional cache flushing, sample summaries, and clean handling of `torch.compile` results or failures.
+
+## Implementation Status
+
+- CUDA-event timing: implemented.
+- CPU fallback and CPU tests: implemented and passing.
+- Optional CUDA cache flushing: implemented and reported when enabled.
+- Independent sessions and richer sample summaries: implemented.
+- CUDA methodology check: pending in this local checkout because the machine is CPU-only.
+- Rigorous small fused8 validation: config exists at `configs/template_fused8_gpu_benchmark_rigorous_small.yaml`; CUDA RunPod execution is pending.
+- Full fused8 rerun with rigorous timing: pending. Legacy fused8 tables should remain labeled as legacy timing until regenerated.
 
 ## Acceptance Criteria For A Claimed Win
 

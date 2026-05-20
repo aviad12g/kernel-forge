@@ -1166,6 +1166,12 @@ def _benchmark_candidate(
             device=benchmark_device,
             warmup=config.benchmark.warmup,
             repeats=config.benchmark.repeats,
+            timing_mode=config.benchmark.timing_mode,
+            independent_sessions=config.benchmark.independent_sessions,
+            cache_flush_config=config.benchmark.cache_flush,
+            bootstrap_ci_config=config.benchmark.bootstrap_ci,
+            separate_compile_time=config.benchmark.separate_compile_time,
+            stable_session_threshold=config.benchmark.stable_session_threshold,
             enable_torch_compile=config.benchmark.enable_torch_compile,
         )
         benchmarks.append(benchmark)
@@ -1343,6 +1349,7 @@ def _benchmark_summary(benchmarks: list[dict[str, Any]]) -> dict[str, Any] | Non
     eager = benchmark.get("eager") or {}
     candidate = benchmark.get("candidate") or {}
     compiled = benchmark.get("torch_compile") or {}
+    speedup_compile = benchmark.get("speedup_vs_torch_compile")
     return {
         "shape": benchmark.get("shape"),
         "dtype": benchmark.get("dtype"),
@@ -1350,8 +1357,26 @@ def _benchmark_summary(benchmarks: list[dict[str, Any]]) -> dict[str, Any] | Non
         "eager_median_ms": eager.get("median_ms"),
         "candidate_median_ms": candidate.get("median_ms"),
         "torch_compile_median_ms": compiled.get("median_ms"),
+        "timing_mode": benchmark.get("timing_mode"),
+        "warmup": benchmark.get("warmup"),
+        "repeat": benchmark.get("repeats"),
+        "independent_sessions": benchmark.get("independent_sessions"),
+        "cache_flush_enabled": benchmark.get("cache_flush_enabled"),
+        "cache_flush_performed": benchmark.get("cache_flush_performed"),
+        "candidate_ms_summary": benchmark.get("candidate_ms_summary"),
+        "eager_ms_summary": benchmark.get("eager_ms_summary"),
+        "torch_compile_ms_summary": benchmark.get("torch_compile_ms_summary"),
         "speedup_vs_eager": benchmark.get("speedup_vs_eager"),
-        "speedup_vs_torch_compile": benchmark.get("speedup_vs_torch_compile"),
+        "speedup_vs_torch_compile": speedup_compile,
+        "speedup_vs_compile": speedup_compile,
+        "compile_time_ms": benchmark.get("compile_time_ms"),
+        "runtime_only_ms": benchmark.get("runtime_only_ms"),
+        "measurement_warnings": benchmark.get("measurement_warnings") or [],
+        "session_summaries": benchmark.get("session_summaries") or [],
+        "across_session_median_speedup": benchmark.get("across_session_median_speedup"),
+        "across_session_iqr": benchmark.get("across_session_iqr"),
+        "stable_above_eager": benchmark.get("stable_above_eager"),
+        "stable_above_compile": benchmark.get("stable_above_compile"),
         "benchmark_error": benchmark.get("benchmark_error"),
         "compile_error": benchmark.get("compile_error"),
     }

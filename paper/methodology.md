@@ -36,7 +36,22 @@ Candidates are executed against deterministic PyTorch references. The verifier r
 
 ## Benchmarking
 
-Current benchmark reports compare candidate runtime against PyTorch eager and optionally `torch.compile`. Reports distinguish:
+Benchmark reports compare candidate runtime against PyTorch eager and optionally `torch.compile`. The legacy path used process wall-clock timing and is retained for CPU development and older artifacts. The rigorous path is opt-in and uses CUDA events for GPU runtime timing so host scheduling overhead is not treated as kernel execution time.
+
+The upgraded benchmark configuration records:
+
+- timing mode: `cuda_event`, `wall_clock`, or `auto`
+- warmup iterations before measurement
+- measured sample count
+- independent measurement sessions
+- optional cache flushing between samples
+- median, IQR, min/max, standard deviation, and coefficient of variation
+- optional bootstrap confidence intervals
+- runtime-only measurements separate from compile/setup timing where practical
+
+Warmup matters because both CUDA kernels and PyTorch baselines can include lazy initialization. Compile time must be separated from runtime because generated kernels should be compared as kernels, not as compiler invocations. Cache flushing is optional because it changes the workload model; when enabled, reports must state that it was performed.
+
+Reports distinguish:
 
 - generation or extraction failures
 - policy rejections
@@ -46,11 +61,11 @@ Current benchmark reports compare candidate runtime against PyTorch eager and op
 - correct-but-slow candidates
 - correct-and-fast candidates
 
-The current benchmark implementation is sufficient for the internal fused8 study but should be upgraded before broader claims. See `benchmarking_methodology_upgrade.md`.
+Single-run timing is treated as a search signal, not a benchmark claim. The project should use CUDA-event timing plus repeatability sessions before making any broader performance claim. See `benchmarking_methodology_upgrade.md`.
 
 ## Repeatability
 
-Top candidates are rebenchmarked with repeated measurement sessions. Reports include median speedup, variability, coefficient of variation, and stability status. A candidate is not treated as a stable win unless repeatability confirms it.
+Top candidates are rebenchmarked with repeated measurement sessions. Reports include per-session median speedup, IQR, coefficient of variation, cache-flush status, and a conservative label: `REPEAT_STABLE_WIN`, `SINGLE_RUN_ONLY_WIN`, `UNSTABLE`, `BELOW_EAGER`, or `INSUFFICIENT_DATA`. A candidate is not treated as a stable win unless repeatability confirms it.
 
 ## Dataset Curation
 

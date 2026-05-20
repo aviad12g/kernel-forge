@@ -22,7 +22,7 @@ The project started with a three-task sandbox: `vector_add`, `relu`, and `bias_r
 
 ## 5. Methods
 
-Each candidate must expose `forward(*args)`. Candidates pass through policy checks before verification. Correct candidates are benchmarked against PyTorch eager and, when configured, `torch.compile`. Repeatability is measured by rebenchmarking top candidates multiple times. Dataset export separates repeat-stable fast candidates, single-run-only candidates, promising candidates, optimization pairs, and rejected or unstable candidates.
+Each candidate must expose `forward(*args)`. Candidates pass through policy checks before verification. Correct candidates are benchmarked against PyTorch eager and, when configured, `torch.compile`. Legacy artifacts use the original wall-clock timing path; the rigorous opt-in path now records CUDA-event timing, warmup and sample counts, median/IQR, coefficient of variation, optional bootstrap intervals, optional cache flushing, independent sessions, and compile/runtime separation where practical. Repeatability is measured by rebenchmarking top candidates multiple times. Dataset export separates repeat-stable fast candidates, single-run-only candidates, promising candidates, optimization pairs, and rejected or unstable candidates.
 
 ## 6. Model and Template Baselines
 
@@ -72,6 +72,10 @@ Provenance note: the latest RunPod fused8 artifacts are not present in this loca
 ## 8. Repeatability Analysis
 
 Repeatability changed several conclusions. In the three-task sandbox, single-run wins for `bias_relu` did not survive repeat benchmarking. In fused8, deterministic templates produced repeat-stable wins for `residual_add_relu`, `bias_gelu`, and `rmsnorm_small`; the final stable winner for `residual_add_relu` came from Gemini template-guided. Single-run wins remain useful search signals, but they are not sufficient evidence for benchmark claims.
+
+The benchmarker now supports explicit repeatability labels: `REPEAT_STABLE_WIN`, `SINGLE_RUN_ONLY_WIN`, `UNSTABLE`, `BELOW_EAGER`, and `INSUFFICIENT_DATA`. These labels are intentionally conservative. A single fast sample, or even a single-run task winner, is not sufficient to claim a kernel improvement unless independent measurement sessions preserve the win.
+
+Implementation status: CUDA-event timing, optional cache flushing, independent sessions, and richer sample summaries are implemented as an opt-in rigorous benchmark path. CPU tests pass. CUDA validation is pending in this local checkout because the available machine is CPU-only. The existing fused8 tables should be treated as legacy timing until a full rigorous rerun replaces them.
 
 ### Stable Winners By Task
 

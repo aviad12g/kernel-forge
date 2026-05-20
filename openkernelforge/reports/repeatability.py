@@ -60,6 +60,12 @@ def collect_repeatability_results(
                     device=config.benchmark.device,
                     warmup=config.benchmark.warmup,
                     repeats=config.benchmark.repeats,
+                    timing_mode=config.benchmark.timing_mode,
+                    independent_sessions=config.benchmark.independent_sessions,
+                    cache_flush_config=config.benchmark.cache_flush,
+                    bootstrap_ci_config=config.benchmark.bootstrap_ci,
+                    separate_compile_time=config.benchmark.separate_compile_time,
+                    stable_session_threshold=config.benchmark.stable_session_threshold,
                     enable_torch_compile=config.benchmark.enable_torch_compile,
                 )
                 if benchmark.benchmark_error:
@@ -75,6 +81,8 @@ def collect_repeatability_results(
                     errors.append("torch.compile error:\n" + benchmark.compile_error)
             except Exception:
                 errors.append(traceback.format_exc())
+        stats = _stats(speedups)
+        stable = _is_stable(speedups)
         rows.append(
             {
                 "task_id": record.get("task_id"),
@@ -98,9 +106,14 @@ def collect_repeatability_results(
                 "speedup_values": speedups,
                 "speedup_vs_compile_values": compile_speedups,
                 "candidate_median_ms_values": candidate_medians,
-                "stats": _stats(speedups),
+                "stats": stats,
                 "compile_stats": _stats(compile_speedups),
-                "stable": _is_stable(speedups),
+                "stable": stable,
+                "label": classify_repeatability_label(
+                    original_speedup=(record.get("benchmark_summary") or {}).get("speedup_vs_eager"),
+                    stats=stats,
+                    stable=stable,
+                ),
                 "errors": errors[:3],
             }
         )
@@ -113,16 +126,18 @@ def format_repeatability_report(run_dir: str | Path, rows: list[dict[str, Any]])
         "",
         f"- Run dir: `{run_dir}`",
         "- Stability threshold: coefficient of variation <= 0.10 over speedup vs eager",
+        "- Labels: REPEAT_STABLE_WIN, SINGLE_RUN_ONLY_WIN, UNSTABLE, BELOW_EAGER, INSUFFICIENT_DATA",
         "",
-        "| Task | Candidate | Original speedup | Median repeat speedup | Mean | Std | Min | Max | CV | Stable | Path |",
-        "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- |",
+        "| Task | Candidate | Label | Original speedup | Median repeat speedup | Mean | Std | Min | Max | CV | Stable | Path |",
+        "| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- |",
     ]
     for row in rows:
         stats = row.get("stats") or {}
         lines.append(
-            "| {task} | {candidate} | {original} | {median} | {mean} | {std} | {minv} | {maxv} | {cv} | {stable} | `{path}` |".format(
+            "| {task} | {candidate} | {label} | {original} | {median} | {mean} | {std} | {minv} | {maxv} | {cv} | {stable} | `{path}` |".format(
                 task=row.get("task_id"),
                 candidate=row.get("candidate_id"),
+                label=row.get("label") or "INSUFFICIENT_DATA",
                 original=_fmt(row.get("original_speedup_vs_eager")),
                 median=_fmt(stats.get("median")),
                 mean=_fmt(stats.get("mean")),
@@ -146,7 +161,8 @@ def format_repeatability_report(run_dir: str | Path, rows: list[dict[str, Any]])
         best = max(valid, key=lambda row: float((row.get("stats") or {}).get("median")))
         lines.append(
             f"- {task_id}: `{best.get('candidate_id')}` median repeat "
-            f"{_fmt((best.get('stats') or {}).get('median'))}x, stable={'yes' if best.get('stable') else 'no'}"
+            f"{_fmt((best.get('stats') or {}).get('median'))}x, label={best.get('label')}, "
+            f"stable={'yes' if best.get('stable') else 'no'}"
         )
     lines.append("")
     return "\n".join(lines)
@@ -171,6 +187,28 @@ def _top_candidates_by_task(records: list[dict[str, Any]], *, top_k: int) -> lis
             )[:top_k]
         )
     return selected
+
+
+def classify_repeatability_label(
+    *,
+    original_speedup: Any,
+    stats: dict[str, Any],
+    stable: bool,
+) -> str:
+    """Classify whether a speedup survived repeatability measurement."""
+
+    median = stats.get("median")
+    if median is None:
+        return "INSUFFICIENT_DATA"
+    median_value = float(median)
+    original_value = float(original_speedup) if original_speedup is not None else None
+    if median_value >= 1.0 and stable:
+        return "REPEAT_STABLE_WIN"
+    if original_value is not None and original_value >= 1.0 and median_value < 1.0:
+        return "SINGLE_RUN_ONLY_WIN"
+    if median_value >= 1.0:
+        return "UNSTABLE"
+    return "BELOW_EAGER"
 
 
 def _resolve_path(path_value: Any, run_dir: str | Path) -> Path:

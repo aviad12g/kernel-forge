@@ -18,14 +18,40 @@ class VerificationConfig:
 
 
 @dataclass
+class CacheFlushBenchmarkConfig:
+    enabled: bool = False
+    size_mb: int = 128
+    mode: str = "write"
+
+
+@dataclass
+class BootstrapCIConfig:
+    enabled: bool = False
+    samples: int = 1000
+    seed: int = 123
+
+
+@dataclass
 class BenchmarkConfig:
     enabled: bool = True
+    timing_mode: str = "auto"
     warmup: int = 5
     repeats: int = 20
+    independent_sessions: int = 1
     dtype: str = "float32"
     device: str = "auto"
     max_shapes_per_task: int = 1
     enable_torch_compile: bool = False
+    cache_flush: CacheFlushBenchmarkConfig = field(default_factory=CacheFlushBenchmarkConfig)
+    bootstrap_ci: BootstrapCIConfig = field(default_factory=BootstrapCIConfig)
+    separate_compile_time: bool = True
+    stable_session_threshold: float = 0.98
+
+    def __post_init__(self) -> None:
+        if isinstance(self.cache_flush, dict):
+            self.cache_flush = CacheFlushBenchmarkConfig(**self.cache_flush)
+        if isinstance(self.bootstrap_ci, dict):
+            self.bootstrap_ci = BootstrapCIConfig(**self.bootstrap_ci)
 
 
 @dataclass

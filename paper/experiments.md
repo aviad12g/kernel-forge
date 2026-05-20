@@ -48,3 +48,15 @@ Qwen 14B was not evaluated because vLLM failed with disk/cache capacity exhausti
 ## Interpretation
 
 The central experimental result is that correctness became reliable before speed did. Correct candidates were common for stronger API models, but repeat-stable speedups were rarer. Deterministic templates remain the clearest baseline for future comparisons.
+
+## Rigorous Timing Status
+
+The fused8 results above are legacy timing results from the earlier benchmark path. The CUDA-event methodology is implemented, including optional cache flushing, independent sessions, median/IQR/CV summaries, and bootstrap intervals. In this local checkout, CUDA validation is still pending because the available machine is CPU-only. The next GPU validation step is:
+
+```bash
+python -m openkernelforge.cli benchmark-methodology-check \
+  --config configs/template_fused8_gpu_benchmark_rigorous.yaml \
+  --max-tasks 2
+```
+
+After that, run `configs/template_fused8_gpu_benchmark_rigorous_small.yaml` on a CUDA RunPod. The current fused8 performance tables should not be updated until the full rigorous rerun is complete.
