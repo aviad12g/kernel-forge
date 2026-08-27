@@ -7,13 +7,15 @@ fresh processes, formal controls, and a checksummed artifact ledger. On a
 performance-blind subset of 48 official KernelBench L1 tasks, 27 of 141 evaluated
 Gemini candidates passed the full gate, covering 10 tasks; none of the frozen
 task winners exceeded eager by the prespecified 2\% margin in either screening
-or seven-process confirmation. A deterministic fused8 grid first supplied a
+or seven-process confirmation. One frozen candidate nevertheless confirmed
+2.001$\times$ versus the compiler baseline while remaining below eager. A
+deterministic fused8 grid first supplied a
 negative control: all 80 easy-regime candidates remained above the margin. We
 then calibrated a disjoint 32-candidate stress test near parity. At budget
 $K=8$, three of four tasks appeared above the margin in screening, but only two
 confirmed; the median log optimism was 0.0072 with four-task bootstrap interval
 $[-0.0124,0.0266]$. Thus the campaign observes one false promotion while not
 supporting a population effect. A lifecycle ablation separately measured
-1.053$\times$ synchronized-host inflation with no corresponding device-time
+1.053$\times$ synchronized-host inflation with no corresponding enclosing-event
 change. These results support independent confirmation as a useful default. We
-make no full-KernelBench or state-of-the-art claim.
+do not establish benchmark-wide performance.

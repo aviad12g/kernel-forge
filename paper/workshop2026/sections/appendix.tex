@@ -27,6 +27,14 @@ task, ten blocks per process, synchronized host
 end-to-end timing, and an enclosing CUDA-event diagnostic. Failure or absence of
 any required control blocks screening and invalidates affected claims.
 
+Across the 24 lifecycle process rows, synchronized-host inflation had median
+1.053 and IQR $[0.998,1.114]$; enclosing-event inflation had median 1.0001 and
+IQR $[0.9919,1.0019]$. A 20,000-sample task-cluster bootstrap, resampling the
+eight tasks while retaining their three process rows, gave intervals
+$[0.950,1.557]$ and $[0.992,1.212]$, respectively. These broad intervals expose
+task heterogeneity; the ablation establishes a timing-boundary mechanism rather
+than a population-wide effect size.
+
 Correctness uses seeds 1103, 2207, 3301, 4409, and 5519. Every case checks two
 executions on the same logical input, exact nested output structure, shape,
 dtype, output-to-input and output-to-output alias patterns, input effects,
@@ -40,7 +48,10 @@ distribution, layout, or high-precision accumulation oracles.
 The easy RQ2 manifest freezes 20 deterministic template sources and metadata
 files for each of \code{bias\_relu}, \code{residual\_add\_relu},
 \code{bias\_gelu}, and \code{rmsnorm\_small} before timing. The near-threshold
-manifest separately freezes 20 delayed variants per task. Three calibration
+manifest separately freezes 20 delayed variants per task. Each adds a fixed
+number of Triton copy passes from the first tensor input into an otherwise
+unused scratch allocation, preserving the base output; fractional work units
+copy an input prefix. Three calibration
 processes select eight candidates per task inside the prespecified
 $[0.98,1.04]$ window; calibration is excluded from primary estimates, and all
 selected candidates receive one screening and seven confirmation processes.

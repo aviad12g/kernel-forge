@@ -51,6 +51,8 @@ This index is generated from the current workspace. Missing artifacts are not in
 | Workshop promotion analysis | `openkernelforge/reports/holdout_confirmation.py` | present in workspace | completed; 0 screening and 0 confirmed above-margin wins | yes |
 | Evaluator calibration controls | `artifacts/workshop2026/evaluator_controls/calibration_validity.json` | present in workspace | `PASS` in 7 processes | yes |
 | Isolated lifecycle control | `artifacts/workshop2026/lifecycle_ablation/lifecycle_ablation_summary.json` | present in workspace | `PASS`, 24/24 rows | yes |
+| Lifecycle uncertainty table | `reports/tables/workshop2026_lifecycle_uncertainty.csv` | present in workspace | process-row IQR and 20,000-sample task-cluster bootstrap from preserved rows | yes |
+| Lifecycle uncertainty report | `reports/workshop2026_lifecycle_uncertainty.md` | present in workspace | derived analysis; no CUDA rerun | yes |
 | Formal campaign gate | `artifacts/workshop2026/campaign_validity.json` | present in workspace | `PASS` before screening | yes |
 | All-candidate multiplicity results | `artifacts/workshop2026/multiplicity/campaign/` | present in workspace | 4 tasks, 28 confirmation processes, 67-entry ledger | yes |
 | Near-threshold v1 calibration | `artifacts/workshop2026/near_threshold_multiplicity/campaign/` | present in workspace | calibration-only grid-design pilot; did not enter primary screening | optional |
@@ -73,6 +75,7 @@ This index is generated from the current workspace. Missing artifacts are not in
 | Fresh-process compiler-rung control | `artifacts/workshop2026/compiler_confirmation_a4500/` | present in workspace | 7/7 RTX A4500 processes; checksum ledger verifies | yes |
 | Compiler-rung summary | `reports/tables/workshop2026_compiler_confirmation.csv` | present in workspace | one frozen winner, 2.001x median versus compile; primary eager result unchanged | yes |
 | Four-page workshop paper | `paper/workshop2026/openkernelforge_workshop2026.pdf` | present in workspace | strict 4-page main matter; external-review draft | yes |
+| Workshop upload artifact | `paper/workshop2026/openkernelforge_workshop2026_submission.pdf` | present in workspace | strict 4-page main matter; prepared artifact, not venue submission | yes |
 
 ## Generated Reports
 
@@ -91,6 +94,7 @@ This index is generated from the current workspace. Missing artifacts are not in
 - Candidate failure breakdown: `reports/tables/workshop2026_candidate_failure_breakdown.csv`
 - Compiler-rung summary: `reports/tables/workshop2026_compiler_rung.csv`
 - Derived multiplicity uncertainty: `reports/tables/workshop2026_selection_multiplicity.csv`
+- Lifecycle uncertainty: `reports/tables/workshop2026_lifecycle_uncertainty.csv`
 - Same-GPU RQ2 control: `reports/workshop2026_same_gpu_rq2_control.md`
 - Compiler-rung confirmation: `reports/workshop2026_compiler_confirmation.md`
 - Near-threshold multiplicity summary: `reports/workshop2026_near_threshold_multiplicity.md`

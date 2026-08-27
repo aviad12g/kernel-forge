@@ -58,11 +58,14 @@ confound without broadening the four-task scope.
 ## Calibrated near-threshold multiplicity stress test
 
 A separate RTX A4500 campaign froze 20 delayed deterministic variants for each
-of the same four fused8 tasks. Three disjoint calibration processes selected
-eight candidates per task inside the prespecified `[0.98, 1.04]` window. The
-calibration data were excluded from primary screening and confirmation. All 32
-selected candidates then completed one 20-block screening process and seven
-fresh 20-block confirmation processes after a 30-minute separation.
+of the same four fused8 tasks. Each variant preserves the base output and adds a
+fixed number of Triton copy passes from the first input into unused scratch;
+fractional work units copy an input prefix. Three disjoint calibration processes
+selected eight candidates per task inside the prespecified `[0.98, 1.04]`
+window. The calibration data were excluded from primary screening and
+confirmation. All 32 selected candidates then completed one 20-block screening
+process and seven fresh 20-block confirmation processes after a 30-minute
+separation.
 
 - At `K=1`, apparent and confirmed win rates were 0.1536 and 0.1243.
 - At `K=8`, apparent and confirmed win rates were 0.7500 and 0.5000.
@@ -88,8 +91,12 @@ design provenance and did not advance to primary screening.
   fraction of 0.056316.
 - Lifecycle ablation: PASS for 24/24 process rows. Reconstructing and
   transferring the reference inside the measured call inflated synchronized
-  host latency by a median factor of 1.053, while the median enclosing
-  CUDA-event ratio was 1.000.
+  host latency by a median factor of 1.053, with process-row IQR
+  `[0.998, 1.114]`; the median enclosing CUDA-event ratio was 1.0001, with IQR
+  `[0.9919, 1.0019]`. Task-cluster bootstrap intervals were `[0.950, 1.557]`
+  and `[0.992, 1.212]`, respectively. Their width reflects heterogeneity across
+  the eight tasks, so the control establishes a timing-boundary mechanism rather
+  than a population-wide effect size.
 
 ## Artifact integrity
 

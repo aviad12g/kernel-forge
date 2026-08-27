@@ -54,6 +54,12 @@ def _validate_text(text: str, document_name: str) -> list[str]:
     for char, char_name in BAD_CHARS.items():
         if char in text:
             errors.append(f"{document_name}: {char_name} found")
+    control_codes = sorted(
+        {ord(char) for char in text if ord(char) < 32 and char not in "\t\n\r\f"}
+    )
+    if control_codes:
+        rendered = ", ".join(f"U+{code:04X}" for code in control_codes)
+        errors.append(f"{document_name}: unexpected control characters found: {rendered}")
 
     lowered = text.lower()
     forbidden_plain = [
@@ -129,21 +135,17 @@ def _source_text(source_root: Path) -> str:
 
 
 def _is_negated(context: str) -> bool:
-    negators = [
-        "no ",
-        "not ",
-        "not a ",
-        "not an ",
-        "do not ",
-        "does not ",
-        "we do not claim",
-        "no unsupported",
-        "not designed to estimate",
-        "without claiming",
-        "neither a ",
-        "neither an ",
+    negator_patterns = [
+        r"\bno\s+",
+        r"\bnot\s+",
+        r"\bdo\s+not\s+",
+        r"\bdoes\s+not\s+",
+        r"\bwe\s+do\s+not\s+claim\b",
+        r"\bnot\s+designed\s+to\s+estimate\b",
+        r"\bwithout\s+claiming\b",
+        r"\bneither\s+(?:a|an)\s+",
     ]
-    return any(negator in context for negator in negators)
+    return any(re.search(pattern, context) for pattern in negator_patterns)
 
 
 def _first_section_pos(text: str, section: str) -> int:

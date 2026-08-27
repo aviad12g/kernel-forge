@@ -258,6 +258,20 @@ figure from these artifacts. The primary result is 0 screening and 0 confirmed
 wins above the 2% margin among 10 valid task winners; see
 `reports/workshop2026_corrected_results.md` for traced summary values.
 
+Lifecycle-ablation uncertainty is regenerated from the 24 preserved process
+rows without executing CUDA work:
+
+```bash
+python scripts/analyze_lifecycle_uncertainty.py
+```
+
+This writes `reports/tables/workshop2026_lifecycle_uncertainty.csv` and
+`reports/workshop2026_lifecycle_uncertainty.md`. The IQR is computed over
+process-level medians. The deterministic 20,000-sample bootstrap resamples the
+eight tasks as clusters while retaining each task's three process rows; its
+broad interval is reported as a heterogeneity diagnostic, not a population
+effect estimate.
+
 The deterministic source files omitted from one intermediate artifact import
 can be restored only when their regenerated source and metadata bytes match the
 pre-timing manifest:

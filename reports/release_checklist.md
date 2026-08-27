@@ -80,6 +80,12 @@ Use this checklist before publishing the repository, sharing a report bundle, or
 - [x] The 2% margin is identified as a prespecified practical threshold, not a post-hoc noise-calibrated bound.
 - [x] Multiplicity figure shows log selection optimism with post-hoc task-bootstrap intervals instead of overlapping 1.0 win-rate lines.
 - [x] Review and submission-upload LaTeX builds use separate notice modes; preparing the upload artifact is not recorded as submission.
+- [x] Official workshop CFP checked: submissions need not be anonymous, main text is limited to four pages, and references plus an optional appendix are excluded from that limit.
+- [x] Primary evidence table uses an explicit `Evidence units` heading instead of the ambiguous `Complete` label.
+- [x] Confirmed 2.001x compiler-relative result is visible in the abstract while its below-eager status remains explicit.
+- [x] Lifecycle process-row IQRs and task-cluster bootstrap intervals are regenerated from preserved artifacts and reported with bounded interpretation.
+- [x] Delayed near-threshold variants are defined as output-preserving calibrated Triton copy work into unused scratch.
+- [x] Exact submission PDF text layer checked for replacement, control, and soft-hyphen artifacts.
 - [x] The report makes no SOTA claim.
 - [x] Corrected KernelBench adapter uses persistent, equally seeded reference `Model` and candidate `ModelNew` instances outside timed regions.
 - [x] Every official KernelBench `Model` task requires `ModelNew`; free functions are limited to local synthetic tasks.

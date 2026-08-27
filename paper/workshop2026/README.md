@@ -5,6 +5,12 @@ existing `paper/overleaf/` project is the long technical report and audit
 appendix. The workshop paper reports the completed corrected holdout,
 controlled multiplicity study, and evaluator controls.
 
+The official workshop CFP was checked on 2026-08-27:
+<https://mlforsystems.org/call_for_papers.html>. It permits up to four pages of
+main text, excludes references and an optional appendix from that limit, and
+does not require anonymization. The named author and public artifact are
+therefore retained. Recheck the CFP before upload in case the policy changes.
+
 The workshop paper uses the official `neurips_2026.sty` downloaded from the
 template linked by the workshop CFP. Build with:
 
@@ -39,13 +45,15 @@ python scripts/analyze_selection_multiplicity.py \
   --timing-blocks artifacts/workshop2026/multiplicity/campaign/all_candidate_timing_blocks.csv \
   --output reports/tables/workshop2026_selection_multiplicity.csv
 python scripts/analyze_near_threshold_campaign.py
+python scripts/analyze_lifecycle_uncertainty.py
 python scripts/make_workshop2026_results_figure.py
 python scripts/build_workshop2026_paper.py --submission-ready
 ```
 
-The formal output is `openkernelforge_workshop2026.pdf`; a compatibility copy
-is retained as `workshop2026_draft.pdf`. The footer identifies the file as a
-review draft until an actual venue submission occurs.
+The review output is `openkernelforge_workshop2026.pdf`; a compatibility copy is
+retained as `workshop2026_draft.pdf`. The exact upload artifact is
+`openkernelforge_workshop2026_submission.pdf` and is produced only by
+`--submission-upload`. Building it does not submit it to a venue.
 
 ## Completed evidence
 
@@ -70,8 +78,10 @@ review draft until an actual venue submission occurs.
 - A separate seven-process RTX A4500 check confirmed the one frozen
   compiler-relative winner at 2.001x versus `torch.compile max-autotune`; its
   primary below-eager result is unchanged.
-- The lifecycle ablation measured 1.053 median synchronized-host inflation and
-  a 1.000 median enclosing CUDA-event ratio.
+- The lifecycle ablation measured 1.053 median synchronized-host inflation,
+  IQR `[0.998, 1.114]`, and a 1.0001 median enclosing CUDA-event ratio, IQR
+  `[0.9919, 1.0019]`. Task-cluster intervals are broad and are reported as
+  heterogeneity diagnostics rather than population-wide effects.
 
 These are bounded campaign results, not a full KernelBench or
 state-of-the-art claim. Reproduction commands and checksum provenance are in

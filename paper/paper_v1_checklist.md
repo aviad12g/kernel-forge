@@ -98,3 +98,9 @@
 - [x] Practical 2% margin rationale and non-calibration boundary are explicit.
 - [x] Multiplicity plot replaced flat win-rate lines with log optimism and post-hoc task-bootstrap intervals.
 - [x] Separate submission-upload entry point removes the review-draft footer only for an upload artifact.
+- [x] Official workshop anonymity and appendix rules verified from the CFP; named author and public artifact are permitted.
+- [x] Workshop primary table replaces the ambiguous `Complete` heading with `Evidence units`.
+- [x] Confirmed 2.001x compiler-relative result foregrounded without changing the below-eager primary claim.
+- [x] Lifecycle uncertainty regenerated from preserved process rows and reported as IQR plus task-cluster bootstrap intervals.
+- [x] Near-threshold delayed variants defined precisely from the implemented output-preserving scratch-copy mechanism.
+- [x] Exact upload PDF passes text-layer checks.
