@@ -1,0 +1,22 @@
+\begin{table}[htbp]
+\centering
+\caption{Task aliases from the affected historical KernelBench adapter run. The subset and its outputs are retained for auditability, not external performance inference.}
+\label{tab:kernelbench-task-appendix}
+\scriptsize
+\begin{tabularx}{\linewidth}{l l l l}
+\toprule
+Task alias & Family & Task alias & Family \\
+\midrule
+conv2d\_square & conv & matmul\_3d & matmul \\
+maxpool1d & pool & conv3d\_square & conv \\
+matmul\_4d & matmul & maxpool2d & pool \\
+conv2d\_asym\_input & conv & CE & loss \\
+matmul\_diagonal & matmul & conv2d\_asym\_kernel & conv \\
+matmul\_symmetric & matmul & avgpool1d & pool \\
+conv\_transpose2d & conv & kldiv & loss \\
+matmul\_upper\_tri & matmul & conv\_transpose3d & conv \\
+triplet & loss & matmul\_lower\_tri & matmul \\
+conv3d\_asym\_input & conv & matmul\_transposed\_A & matmul \\
+\bottomrule
+\end{tabularx}
+\end{table}

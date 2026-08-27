@@ -62,7 +62,8 @@ On CPU-only machines this exits cleanly with a skipped report. On CUDA machines 
 - Independent sessions and richer sample summaries: implemented.
 - CUDA methodology check: validated on a RunPod RTX 5090 run at `runs/20260520_145721`. The check completed with `timing_mode=cuda_event`, cache flushing enabled and performed, and three independent sessions.
 - Rigorous small fused8 validation: completed on RunPod at `runs/20260520_145741` using `configs/template_fused8_gpu_benchmark_rigorous_small.yaml`. It generated 160 candidates, verified 160/160, benchmarked 160, and wrote fused8 and repeatability reports.
-- Full fused8 rerun with rigorous timing: pending. Legacy fused8 tables should remain labeled as legacy timing until regenerated.
+- Full rigorous deterministic fused8 rerun: completed on RunPod at `runs/20260520_155839`. The paper-facing template tables now use this rigorous timing path; older fused8 tables remain labeled as legacy timing.
+- Rigorous fused8 Gemini and OpenAI mini baselines: completed on RunPod at `runs/20260520_163344` and `runs/20260520_163607`.
 
 ## Acceptance Criteria For A Claimed Win
 
@@ -78,4 +79,4 @@ A generated kernel should be called faster only if:
 
 - Do not add Nsight profiling in this sprint.
 - Do not change task definitions while changing timing methodology.
-- Do not run KernelBench before validating the upgraded benchmarker on internal fused8 tasks.
+- Do not treat capped KernelBench pilot rows as benchmark-wide KernelBench results.

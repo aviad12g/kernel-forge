@@ -33,6 +33,12 @@ RUN_ROOT_FILES = {
     "template_autotune_report.md",
     "template_copy_report.md",
     "focused_sweep_report.md",
+    "kernelbench_l1_check.md",
+    "kernelbench_l1_check.json",
+    "kernelbench_l1_pilot_report.md",
+    "kernelbench_candidate_failure_analysis.md",
+    "kernelbench_failure_taxonomy.json",
+    "kernelbench_repair_subset.md",
 }
 RUN_DIRS = {"candidates", "prompts", "responses", "logs"}
 DATASET_SUFFIXES = {".jsonl", ".json", ".md", ".txt"}
@@ -42,9 +48,31 @@ SECRET_PATTERNS = (
     re.compile(r"GEMINI_API_KEY\s*=\s*[^<\s][^\s]*"),
     re.compile(r"sk-[A-Za-z0-9_\-]{12,}"),
     re.compile(r"AIza[A-Za-z0-9_\-]{12,}"),
+    re.compile(r"rpa_[A-Za-z0-9_\-]{20,}"),
 )
 
 ARTIFACT_SPECS: list[dict[str, Any]] = [
+    {
+        "source": "runs/20260520_155839",
+        "dest": "runs/20260520_155839_template_fused8_rigorous",
+        "required": True,
+        "kind": "run",
+        "why": "rigorous CUDA-event deterministic fused8 template benchmark",
+    },
+    {
+        "source": "runs/20260520_163344",
+        "dest": "runs/20260520_163344_gemini_fused8_rigorous",
+        "required": True,
+        "kind": "run",
+        "why": "rigorous CUDA-event Gemini fused8 baseline",
+    },
+    {
+        "source": "runs/20260520_163607",
+        "dest": "runs/20260520_163607_openai_mini_fused8_rigorous",
+        "required": True,
+        "kind": "run",
+        "why": "rigorous CUDA-event OpenAI mini fused8 baseline",
+    },
     {
         "source": "runs/20260519_213349",
         "dest": "runs/20260519_213349_template_fused8_wide",
@@ -88,11 +116,32 @@ ARTIFACT_SPECS: list[dict[str, Any]] = [
         "why": "local Qwen 7B cheap fused8 baseline",
     },
     {
+        "source": "runs/20260520_202314",
+        "dest": "runs/20260520_202314_kernelbench_gemini_pilot",
+        "required": True,
+        "kind": "run",
+        "why": "capped KernelBench L1 one-shot pilot and failure taxonomy",
+    },
+    {
+        "source": "runs/20260520_213128",
+        "dest": "runs/20260520_213128_kernelbench_repair1",
+        "required": True,
+        "kind": "run",
+        "why": "capped KernelBench L1 repair iteration",
+    },
+    {
         "source": "datasets/fused8_curated_v1",
         "dest": "datasets/fused8_curated_v1",
         "required": True,
         "kind": "dataset",
         "why": "curated repeatability-aware fused8 dataset",
+    },
+    {
+        "source": "runs/rigorous_fused8_model_comparison.md",
+        "dest": "reports/rigorous_fused8_model_comparison.md",
+        "required": True,
+        "kind": "file",
+        "why": "rigorous template/Gemini/OpenAI mini model comparison",
     },
     {
         "source": "runs/fused8_phase11_conclusion.md",
@@ -224,6 +273,8 @@ def _copy_tree(source: Path, dest: Path, manifest: dict[str, Any]) -> int:
 
 
 def _copy_file(source: Path, dest: Path, manifest: dict[str, Any]) -> int:
+    if source.is_symlink():
+        raise ValueError(f"refusing to package symlinked artifact: {source}")
     if _contains_secret(source):
         manifest["omitted_secret_files"].append(str(source))
         return 0
@@ -254,10 +305,18 @@ def _sha256(path: Path) -> str:
 
 def _contains_secret(path: Path) -> bool:
     try:
-        text = path.read_text(encoding="utf-8", errors="ignore")
+        with path.open("r", encoding="utf-8", errors="ignore") as source:
+            carry = ""
+            while True:
+                chunk = source.read(1024 * 1024)
+                if not chunk:
+                    return any(pattern.search(carry) for pattern in SECRET_PATTERNS)
+                text = carry + chunk
+                if any(pattern.search(text) for pattern in SECRET_PATTERNS):
+                    return True
+                carry = text[-512:]
     except OSError:
         return False
-    return any(pattern.search(text) for pattern in SECRET_PATTERNS)
 
 
 def _excluded(path: Path) -> bool:

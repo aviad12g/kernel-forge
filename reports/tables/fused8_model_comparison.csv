@@ -1,10 +1,5 @@
-baseline,candidates,verified,median_speedup_vs_eager,tasks_above_eager,repeat_stable_wins,conclusion
-deterministic templates rigorous CUDA-event,160,160/160,0.945,4/8 single-run,"residual_add_relu, bias_gelu, rmsnorm_small",current paper-facing deterministic template table; capped rigorous grid
-Gemini fused8 rigorous CUDA-event,pending,pending,pending,pending,pending,configured for 24 candidates with CUDA events/cache flush/three sessions; not run until GEMINI_API_KEY is available
-OpenAI mini rigorous CUDA-event,pending,pending,pending,pending,pending,configured for 24 candidates with CUDA events/cache flush/three sessions; not run until OPENAI_API_KEY is available
-deterministic templates legacy timing,2076,2076/2076,0.862,5/8 single-run,"residual_add_relu, bias_gelu, rmsnorm_small",legacy wide search; keep for historical comparison only
-Gemini fused8 baseline legacy timing,28,28/28,0.933,4/8 single-run,competitive but not final stable winner in provided summary,strong zero-shot correctness and competitive speed; rerun required for paper-facing comparison
-Gemini template-guided legacy timing,34,34/34,0.798,4/8 single-run,residual_add_relu,useful optimization data; median performance regressed
-OpenAI mini cheap legacy timing,8,8/8,0.882,3/8 single-run,"residual_add_relu, bias_gelu, rmsnorm_small",cheap and competitive; rerun required for paper-facing comparison
-GPT-5.5 cheap legacy timing,8,8/8,0.927,provided summary: not dominant,"bias_gelu, rmsnorm_small",correct and usable; not clearly better under cheap protocol
-Qwen 7B local,8,1/8 effective,0.002,0/8,none,not competitive zero-shot
+baseline,candidates,verified,median_speedup_vs_eager,median_speedup_vs_compile,uncertainty,repeat_stable_wins,conclusion
+template,160,160/160,0.945,1.079,not preserved,"residual, bias_gelu, rmsnorm",strongest overall floor
+Gemini,24,23/24,0.923,1.863,not preserved,"bias_gelu, rmsnorm",strongest model correctness; stable wins below deterministic template medians
+OpenAI mini,24,12/24,0.888,1.835,not preserved,residual,weaker correctness; one stable win over deterministic template repeat median
+legacy model rows,various,various,legacy,legacy,legacy,legacy timing,historical context only; not primary paper-facing comparison

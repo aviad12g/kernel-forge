@@ -1,0 +1,97 @@
+[
+  {
+    "cmd": [
+      "python",
+      "-m",
+      "openkernelforge.cli",
+      "env-check"
+    ],
+    "returncode": 0,
+    "seconds": 2.47,
+    "stdout": "OpenKernelForge environment check\n- Viability: TRITON_EXECUTION_OK\n- Python: 3.12.12 (main, Oct 10 2025, 08:52:57) [GCC 11.4.0]\n- Platform: Linux 6.8.0-59-generic (x86_64)\n- Torch: yes (2.9.1+cu128)\n- CUDA: yes\n- CUDA devices: 1 [0: NVIDIA GeForce RTX 4090 sm_89]\n- Triton: yes (3.5.1)\n- Tiny Triton kernel: pass\n",
+    "stderr": ""
+  },
+  {
+    "cmd": [
+      "nvidia-smi",
+      "-q",
+      "-d",
+      "CLOCK,POWER,TEMPERATURE"
+    ],
+    "returncode": 0,
+    "seconds": 0.05,
+    "stdout": "                          : 450.00 W\n        Min Power Limit                                : 150.00 W\n        Max Power Limit                                : 450.00 W\n    Power Samples\n        Duration                                       : 22.69 sec\n        Number of Samples                              : 119\n        Max                                            : 72.02 W\n        Min                                            : 20.62 W\n        Avg                                            : 25.18 W\n    GPU Memory Power Readings \n        Average Power Draw                             : N/A\n        Instantaneous Power Draw                       : N/A\n    Module Power Readings\n        Average Power Draw                             : N/A\n        Instantaneous Power Draw                       : N/A\n        Current Power Limit                            : N/A\n        Requested Power Limit                          : N/A\n        Default Power Limit                            : N/A\n        Min Power Limit                                : N/A\n        Max Power Limit                                : N/A\n    Clocks\n        Graphics                                       : 2520 MHz\n        SM                                             : 2520 MHz\n        Memory                                         : 10251 MHz\n        Video                                          : 1965 MHz\n    Applications Clocks\n        Graphics                                       : N/A\n        Memory                                         : N/A\n    Default Applications Clocks\n        Graphics                                       : N/A\n        Memory                                         : N/A\n    Deferred Clocks\n        Memory                                         : N/A\n    Max Clocks\n        Graphics                                       : 3105 MHz\n        SM                                             : 3105 MHz\n        Memory                                         : 10501 MHz\n        Video                                          : 2415 MHz\n    Max Customer Boost Clocks\n        Graphics                                       : N/A\n    SM Clock Samples\n        Duration                                       : Not Found\n        Number of Samples                              : Not Found\n        Max                                            : Not Found\n        Min                                            : Not Found\n        Avg                                            : Not Found\n    Memory Clock Samples\n        Duration                                       : Not Found\n        Number of Samples                              : Not Found\n        Max                                            : Not Found\n        Min                                            : Not Found\n        Avg                                            : Not Found\n    Clock Policy\n        Auto Boost                                     : N/A\n        Auto Boost Default                             : N/A\n\n",
+    "stderr": ""
+  },
+  {
+    "cmd": [
+      "git",
+      "clone",
+      "https://github.com/ScalingIntelligence/KernelBench.git",
+      "/tmp/KernelBench"
+    ],
+    "returncode": 0,
+    "seconds": 0.95,
+    "stdout": "",
+    "stderr": "Cloning into '/tmp/KernelBench'...\n"
+  },
+  {
+    "cmd": [
+      "git",
+      "checkout",
+      "423217d9fda91e0c2d67e4a43bf62f96f6d104f1"
+    ],
+    "returncode": 0,
+    "seconds": 0.02,
+    "stdout": "",
+    "stderr": "Note: switching to '423217d9fda91e0c2d67e4a43bf62f96f6d104f1'.\n\nYou are in 'detached HEAD' state. You can look around, make experimental\nchanges and commit them, and you can discard any commits you make in this\nstate without impacting any branches by switching back to a branch.\n\nIf you want to create a new branch to retain commits you create, you may\ndo so (now or later) by using -c with the switch command. Example:\n\n  git switch -c <new-branch-name>\n\nOr undo this operation with:\n\n  git switch -\n\nTurn off this advice by setting config variable advice.detachedHead to false\n\nHEAD is now at 423217d update all legacy python commands to UV + document integration (#143)\n"
+  },
+  {
+    "cmd": [
+      "python",
+      "-m",
+      "pip",
+      "install",
+      "-e",
+      "/tmp/okf_flash_profile_granular",
+      "--no-deps"
+    ],
+    "returncode": 0,
+    "seconds": 2.0,
+    "stdout": "Obtaining file:///tmp/okf_flash_profile_granular\n  Installing build dependencies: started\n  Installing build dependencies: finished with status 'done'\n  Checking if build backend supports build_editable: started\n  Checking if build backend supports build_editable: finished with status 'done'\n  Getting requirements to build editable: started\n  Getting requirements to build editable: finished with status 'done'\n  Preparing editable metadata (pyproject.toml): started\n  Preparing editable metadata (pyproject.toml): finished with status 'done'\nBuilding wheels for collected packages: openkernelforge\n  Building editable for openkernelforge (pyproject.toml): started\n  Building editable for openkernelforge (pyproject.toml): finished with status 'done'\n  Created wheel for openkernelforge: filename=openkernelforge-0.1.0-0.editable-py3-none-any.whl size=7967 sha256=ce74c1ceca58af4c1854dc6394045fb6037b978f4c0fbc6409e17b0919ee180d\n  Stored in directory: /tmp/pip-ephem-wheel-cache-cc7srm0h/wheels/78/ef/f7/715a707c7c609dd918ddde81366ab975329fa3ae7744ec5923\nSuccessfully built openkernelforge\nInstalling collected packages: openkernelforge\n  Attempting uninstall: openkernelforge\n    Found existing installation: openkernelforge 0.1.0\n    Uninstalling openkernelforge-0.1.0:\n      Successfully uninstalled openkernelforge-0.1.0\nSuccessfully installed openkernelforge-0.1.0\n",
+    "stderr": "\n[notice] A new release of pip is available: 25.3 -> 26.1.1\n[notice] To update, run: python -m pip install --upgrade pip\n"
+  },
+  {
+    "cmd": [
+      "python",
+      "/tmp/okf_flash_profile_granular/scripts/profile_one_loss.py",
+      "/tmp/okf_flash_profile_granular/reports/profiling/parts/CrossEntropyLoss.json"
+    ],
+    "returncode": 0,
+    "seconds": 410.73,
+    "stdout": "{\"task\": \"CrossEntropyLoss\", \"op_rows\": 21, \"mem_rows\": 2, \"statuses\": [\"profiled\"]}\n",
+    "stderr": ""
+  },
+  {
+    "cmd": [
+      "python",
+      "/tmp/okf_flash_profile_granular/scripts/profile_one_loss.py",
+      "/tmp/okf_flash_profile_granular/reports/profiling/parts/TripletMarginLoss.json"
+    ],
+    "returncode": 0,
+    "seconds": 446.78,
+    "stdout": "{\"task\": \"TripletMarginLoss\", \"op_rows\": 21, \"mem_rows\": 2, \"statuses\": [\"profiled\"]}\n",
+    "stderr": ""
+  },
+  {
+    "cmd": [
+      "python",
+      "/tmp/okf_flash_profile_granular/scripts/profile_one_loss.py",
+      "/tmp/okf_flash_profile_granular/reports/profiling/parts/KLDivLoss.json"
+    ],
+    "returncode": 0,
+    "seconds": 441.78,
+    "stdout": "{\"task\": \"KLDivLoss\", \"op_rows\": 24, \"mem_rows\": 2, \"statuses\": [\"profiled\"]}\n",
+    "stderr": ""
+  }
+]

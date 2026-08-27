@@ -1,0 +1,3 @@
+stage,verified_candidates,compile_time_ms_available,compile_time_ms_summary,runtime_only_ms_available,runtime_only_ms_summary,notes,evidence_status
+one-shot Gemini,3,0,not preserved,3,median 0.3788,historical fields use obsolete accounting or are null; not interpreted,historical_adapter_output_only
+repair1,1,0,not preserved,1,median 4.1367,historical fields use obsolete accounting or are null; not interpreted,historical_adapter_output_only

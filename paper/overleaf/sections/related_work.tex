@@ -1,0 +1,22 @@
+\section{Related Work}
+
+\paragraph{Generated GPU kernels and kernel agents.}
+Kernel-generation systems translate tensor programs into CUDA or Triton implementations and must satisfy both correctness and performance constraints. KernelBench frames this as a model-evaluation problem at benchmark scale~\cite{kernelbench2025}. CUDA-L1 studies feedback-driven CUDA optimization as a learning problem~\cite{cudallm2025}. \okf{} is narrower: it is not a new model, training method, or leaderboard submission. It provides evaluation infrastructure for deciding which generated-kernel speedups are supported by preserved artifacts and repeatability-aware measurement.
+
+\paragraph{Kernel generation benchmarks.}
+KernelBench asks whether LLMs can write efficient GPU kernels across many tasks~\cite{kernelbench2025}. KernelBench-Verified subsequently shows that baseline configuration and narrow correctness distributions can overstate generated-kernel performance~\cite{zhang2026kernelbenchverified}. Its hidden-test and TF32 analyses complement the present focus on task-state contracts, lifecycle isolation, repeatability, and artifact provenance. This paper does not report a validated KernelBench score. Instead, it uses preserved artifacts from a capped historical pilot to audit policy checks and evaluator behavior. That audit motivated the corrected \code{ModelNew} adapter and shows why evaluator validity must be established before model capability is inferred.
+
+\paragraph{Triton and GPU DSLs.}
+Triton exposes GPU programming concepts through a Python-embedded DSL~\cite{tillet2019triton}. Other systems such as Halide~\cite{ragankelley2013halide} and TVM~\cite{chen2018tvm} show the value of scheduling languages and compiler infrastructure for high-performance kernels. FlashAttention illustrates how memory movement and IO-aware design can dominate GPU-kernel performance~\cite{dao2022flashattention}. \okf{} uses Triton as the candidate target because generated code can remain close to Python while expressing GPU tiling and memory behavior.
+
+\paragraph{Compiler baselines and PyTorch compilation.}
+PyTorch 2 and TorchInductor make compiler-generated kernels part of the practical baseline for tensor programs~\cite{ansel2024pytorch2}. This paper reports both PyTorch eager and \compile{} because they answer different questions. Eager may call specialized library paths, while compile may expose weaker compiler-generated paths for some shapes.
+
+\paragraph{Measurement reliability.}
+Systems researchers have long shown that performance measurements can change under seemingly irrelevant experimental details. Mytkowicz et al. demonstrate that measurement bias can produce wrong conclusions without any obvious methodological mistake~\cite{mytkowicz2009wrongdata}. Stabilizer argues for statistically sound performance evaluation under modern architectural nondeterminism~\cite{curtsinger2013stabilizer}. Touati similarly emphasizes statistical methodology for speedup claims in program optimization~\cite{touati2009statistical}. GPU timing also requires explicit synchronization and careful separation of warmup, compilation, and measured runtime. CUDA events provide device-side elapsed-time measurement~\cite{nvidiaCudaEvents}. The novelty here is not CUDA timing itself; it is integrating repeatability labels, artifact preservation, static policy checks, and generated-kernel verification into one evaluation layer.
+
+\paragraph{Repair and feedback for generated code.}
+Verifier feedback is a natural source of repair context. Self-Refine studies iterative refinement through feedback for generated outputs~\cite{madaan2023selfrefine}. The preserved historical repair pass is narrower: it provides verifier errors and the previous candidate code to Gemini once. We retain it to document the evaluator workflow, not as corrected evidence of repair effectiveness.
+
+\paragraph{Positioning.}
+Appendix Table~\ref{tab:positioning} summarizes the relation between \okf{} and adjacent areas. KernelBench and CUDA-L1 focus on generated-kernel capability and improvement; Triton, Halide, TVM, and TorchInductor provide compiler and DSL context; systems-measurement work motivates statistical caution. \okf{} combines these threads as a repeatability-aware evaluation and artifact-preservation layer, including auditability of the evaluator itself.

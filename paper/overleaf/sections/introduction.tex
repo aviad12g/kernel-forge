@@ -1,0 +1,20 @@
+\section{Introduction}
+
+LLMs and coding agents increasingly generate low-level GPU kernels from high-level tensor programs. This capability is useful only if the generated kernels are correct, inspectable, and faster under a measurement protocol that survives reruns. Correctness alone is not enough: a candidate may pass tests while remaining slower than PyTorch eager or a compiler baseline. A single timing run is also not enough. GPU timing is affected by warmup, lazy compilation, synchronization, cache state, clock behavior, and sample variance.
+
+The problem is sharper for generated-kernel systems because they search over candidates. When the selection signal is noisy, a search procedure can select measurement artifacts rather than durable runtime improvements. A result table that reports only the fastest observed run can therefore overstate progress, especially when many candidates were attempted.
+
+\okf{} is built around a narrower claim: generated-kernel systems need an artifact-preserving, repeatability-aware evaluation layer before their speedups are promoted into reports or datasets. The project is not primarily a kernel generator. It contributes an evaluation protocol and artifact discipline: each candidate keeps its prompt or template provenance, raw model output, extracted source, static policy result, verifier result, timing samples, repeatability label, and report row. The harness compares candidates against PyTorch eager, \compile{}, and deterministic Triton templates that serve as an explicit performance floor.
+
+This paper reports a controlled internal fused8 study and an audit of a capped KernelBench L1 pilot. The fused8 study compares deterministic templates, Gemini, and OpenAI mini under one CUDA-event timing protocol. The KernelBench artifacts cover one Gemini candidate per task and one repair pass, but a post-hoc implementation audit found task-contract and reference-lifecycle defects. We retain that pilot as an evaluator-audit case study rather than supported external performance evidence.
+
+The two components answer different questions. The fused8 study asks how candidate sources compare when tasks and timing are controlled. The KernelBench audit asks whether the external adapter itself satisfies the official state and timing contract. This distinction is central: an evaluation layer must make generated candidates auditable, but it must also expose defects in its own baselines and task adaptation.
+
+\paragraph{Contributions.}
+\begin{itemize}
+  \item A repeatability-aware measurement protocol for generated Triton kernels using CUDA events, cache-state perturbation, repeated sessions, session-level summaries, materialized compile accounting, and \compile{}.
+  \item An artifact-preserving verifier pipeline that records prompts, responses, source, policy checks, correctness traces, timing summaries, repeatability labels, and dataset metadata.
+  \item A controlled fused8 study showing why deterministic templates and repeatability labels are necessary baselines for generated-kernel claims.
+  \item A corrected KernelBench adapter contract that initializes persistent reference \code{Model} and candidate \code{ModelNew} modules outside timed regions and rejects state-incompatible candidates.
+  \item An artifact-backed audit showing why the historical KernelBench pilot must be revalidated rather than silently accepted or rewritten.
+\end{itemize}

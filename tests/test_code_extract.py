@@ -33,3 +33,17 @@ def test_extract_python_code_reports_error_without_forward():
     result = extract_python_code("This response has no code.")
     assert not result.ok
     assert result.error is not None
+
+
+def test_extract_python_code_accepts_model_new_forward():
+    response = """```python
+import torch
+
+class ModelNew(torch.nn.Module):
+    def forward(self, x):
+        return x
+```"""
+    result = extract_python_code(response)
+    assert result.ok
+    assert result.code is not None
+    assert "class ModelNew" in result.code

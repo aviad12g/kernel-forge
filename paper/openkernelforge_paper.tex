@@ -1,0 +1,66 @@
+% Compatibility entry point. The authoritative manuscript lives under
+% paper/overleaf/ and is split into section and table files for Overleaf.
+\documentclass[10pt]{article}
+
+\usepackage[margin=0.78in]{geometry}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{siunitx}
+\usepackage{adjustbox}
+\usepackage{multirow}
+\usepackage{pdflscape}
+\usepackage{placeins}
+
+\IfFileExists{paper/overleaf/sections/abstract.tex}
+  {\newcommand{\paperroot}{paper/overleaf}}
+  {\newcommand{\paperroot}{overleaf}}
+\makeatletter
+\def\input@path{{paper/overleaf/}{overleaf/}}
+\makeatother
+\graphicspath{{paper/overleaf/figures/}{overleaf/figures/}}
+\hypersetup{colorlinks=true, linkcolor=blue!45!black,
+  citecolor=blue!45!black, urlcolor=blue!45!black}
+
+\newcommand{\okf}{OpenKernelForge}
+\newcommand{\speed}[1]{#1$\times$}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\compile}{\code{torch.compile max-autotune}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\setlist[itemize]{leftmargin=*, topsep=2pt, itemsep=2pt}
+\captionsetup{font=small, labelfont=bf}
+
+\title{\okf: Repeatability-Aware Evaluation for LLM-Generated Triton Kernels}
+\author{Anonymous Authors}
+\date{}
+
+\begin{document}
+\maketitle
+\begin{abstract}
+\input{\paperroot/sections/abstract}
+\end{abstract}
+
+\input{\paperroot/sections/introduction}
+\input{\paperroot/sections/methodology}
+\input{\paperroot/sections/experiments}
+\input{\paperroot/sections/discussion}
+\input{\paperroot/sections/related_work}
+\input{\paperroot/sections/limitations}
+\input{\paperroot/sections/conclusion}
+
+\FloatBarrier
+\bibliographystyle{plain}
+\bibliography{\paperroot/references}
+
+\FloatBarrier
+\clearpage
+\appendix
+\input{\paperroot/sections/appendix}
+\end{document}

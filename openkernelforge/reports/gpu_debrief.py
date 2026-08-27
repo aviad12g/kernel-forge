@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from collections import Counter, defaultdict
+from collections import Counter
 from pathlib import Path
 from typing import Any
 
@@ -50,13 +50,13 @@ def format_gpu_debrief(bundle: dict[str, Any]) -> str:
         "| --- | --- | --- | ---: | --- |",
     ]
     for task in tasks:
-        selected = _selected_for_task(candidates, task.get("task_id"))
-        benchmark = selected.get("benchmark_summary") if selected else {}
+        selected_record = _selected_for_task(candidates, task.get("task_id"))
+        benchmark = selected_record.get("benchmark_summary") if selected_record else {}
         lines.append(
             "| {task} | {verified} | {candidate} | {speedup} | {notes} |".format(
                 task=task.get("task_id"),
                 verified="yes" if (task.get("verification") or {}).get("passed") else "no",
-                candidate=selected.get("candidate_id", "n/a") if selected else "n/a",
+                candidate=selected_record.get("candidate_id", "n/a") if selected_record else "n/a",
                 speedup=_fmt(benchmark.get("speedup_vs_eager") if benchmark else None),
                 notes=_task_notes(task),
             )
@@ -94,9 +94,9 @@ def format_gpu_debrief(bundle: dict[str, Any]) -> str:
         )
 
     lines.extend(["", "## Best Candidate Per Task", ""])
-    selected = [record for record in candidates if record.get("selected_best")]
-    if selected:
-        for record in selected:
+    selected_records = [record for record in candidates if record.get("selected_best")]
+    if selected_records:
+        for record in selected_records:
             benchmark = record.get("benchmark_summary") or {}
             lines.append(
                 f"- {record.get('task_id')} {record.get('candidate_id')}: "

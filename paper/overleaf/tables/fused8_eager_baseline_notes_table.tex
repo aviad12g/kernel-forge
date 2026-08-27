@@ -1,0 +1,15 @@
+\begin{table}[htbp]
+\centering
+\caption{Qualitative fused8 eager-baseline notes. These notes are based on reference-source inspection rather than profiler traces.}
+\label{tab:fused8-eager-notes}
+\scriptsize
+\begin{tabularx}{\linewidth}{l X l X}
+\toprule
+Task/family & Likely eager path & Conf. & Caveat \\
+\midrule
+elementwise fused8 & ATen elementwise kernels and broadcasting paths & medium & qualitative source inspection only; no profiler traces in local package \\
+row\_sum & ATen reduction kernel & medium & exact kernel path not recorded \\
+layernorm/rmsnorm & ATen normalization and reduction operations & medium & no Nsight or torch.profiler attribution is preserved \\
+\bottomrule
+\end{tabularx}
+\end{table}

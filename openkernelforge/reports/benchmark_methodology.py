@@ -64,7 +64,7 @@ def _format_skipped_report(config_path: str | Path, environment: Any, *, reason:
             "# Benchmark Methodology Check",
             "",
             f"- Config: `{config_path}`",
-            f"- Status: skipped",
+            "- Status: skipped",
             f"- Reason: {reason}",
             "",
             "## Environment",

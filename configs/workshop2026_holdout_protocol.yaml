@@ -1,0 +1,210 @@
+study:
+  id: workshop2026_holdout_v1
+  title: Do LLM-Generated GPU Kernel Speedups Survive Re-Evaluation?
+  status: preregistered_pending_gpu_execution
+  claim: >-
+    Candidate search, timing noise, and evaluator lifecycle errors can promote
+    unsupported GPU-kernel speedups; contract-valid independent confirmation
+    is used to measure and reduce false promotion.
+  protocol_amendment:
+    date: 2026-08-27
+    timing: before_task_manifest_freeze_and_candidate_generation
+    change: target_tasks_50_to_48
+    reason: >-
+      Performance-blind preflight of the pinned 100-task KernelBench L1 pool
+      found exactly 49 tasks at or below the preregistered 8192 MiB known-peak
+      memory cap. Every remaining task had an estimated known peak of at least
+      20480 MiB. One feasible task is reserved, by the same deterministic order,
+      for the required excluded-task shakedown. The primary target is therefore
+      48. The memory cap and selection order were not changed.
+
+kernelbench:
+  repository: https://github.com/ScalingIntelligence/KernelBench
+  commit: 423217d9fda91e0c2d67e4a43bf62f96f6d104f1
+  level: 1
+  target_tasks: 48
+  family_order:
+    - activation
+    - convolution
+    - loss
+    - matmul
+    - normalization
+    - pooling
+    - reduction
+    - scan
+    - kernelbench_l1
+  selection_rule: deterministic_first_feasible_family_round_robin
+  selection_blinding: no_candidate_or_performance_fields_read
+  memory_preflight:
+    allow_cpu_materialization_fallback: false
+    max_input_numel: null
+    max_total_input_bytes: null
+    max_estimated_known_peak_mb: 8192
+    estimate_scope: verification_input_copies_plus_model_state_lower_bound
+  freeze:
+    manifest: artifacts/workshop2026/task_selection_manifest.json
+    csv: artifacts/workshop2026/task_selection_manifest.csv
+    checksum: artifacts/workshop2026/task_selection_manifest.sha256
+    overwrite: false
+
+candidate_generation:
+  enabled: false
+  unlock_requires_frozen_task_manifest: true
+  provider: gemini
+  backend: openai_compatible
+  configured_model_string: gemini-3.1-flash-lite
+  base_url: https://generativelanguage.googleapis.com/v1beta/openai/
+  api_key_env: GEMINI_API_KEY
+  prompt_version: workshop2026_v1
+  candidates_per_task: 3
+  max_attempts_per_candidate: 1
+  temperature: 0.2
+  top_p: 0.95
+  max_tokens: 4096
+  timeout_seconds: 120
+  repair_loops: 0
+  performance_search: false
+  template_guidance: false
+
+correctness:
+  evaluated_before_performance_screening: true
+  seeds: [1103, 2207, 3301, 4409, 5519]
+  input_source: seeded_official_get_inputs
+  same_input_repeat_executions: 2
+  require_deterministic_repeat: true
+  require_exact_output_tree: true
+  require_alias_contract: true
+  distribution_variants: not_generic_for_official_task_contracts
+  require_special_value_mask_parity: true
+  require_output_contract: true
+  require_state_contract: true
+  require_no_input_mutation: true
+  nearby_shapes: not_claimed_without_task_specific_contract
+  noncontiguous_inputs: not_claimed_without_task_specific_contract
+  accumulator_precision: task_tolerance_only_no_additional_precision_oracle
+
+screening:
+  processes: 1
+  process_seed: 41041
+  paired_blocks: 20
+  include_compile_baseline: true
+  torch_compile_mode: max-autotune
+  compile_materialized_before_runtime: true
+  include_lifecycle_ablation: false
+  randomized_method_order: true
+  identical_input_snapshot_within_block: true
+  selection_metric: median_log_speedup_vs_eager
+  freeze_one_candidate_per_task: true
+
+confirmation:
+  fresh_processes: 7
+  process_seed_base: 51071
+  paired_blocks_per_process: 20
+  randomized_method_order: true
+  identical_input_snapshot_within_block: true
+  spread_across_time_periods: 2
+  temporal_wave_rule:
+    require_separate_invocations: true
+    minimum_separation_minutes: 30
+    instance_restart_required: false
+    require_same_gpu_uuid: true
+    require_same_software_fingerprint: true
+    wave1_review_policy: integrity_and_completeness_only
+    changed_environment_policy: rerun_entire_affected_wave_or_record_protocol_deviation
+  timing: cuda_event
+  minimum_interval_ms: 1.5
+  adaptive_launch_count: true
+  warmup_launches: 30
+  cache_state_perturbation:
+    enabled: true
+    l2_multiplier: 2.0
+    minimum_size_mb: 32
+    maximum_size_mb: 512
+    mode: read_write
+  compare_against: [pytorch_eager]
+  compiler_context: screening_torch_compile_max_autotune
+
+promotion:
+  practical_speedup_margin: 0.02
+  confidence_level: 0.95
+  cluster_unit: process
+  cluster_statistic: median_of_process_block_medians
+  bootstrap_samples: 20000
+  bootstrap_seed: 62081
+  interval_method: percentile
+  centered_test_null: log1p_practical_speedup_margin
+  p_value_tail: one_sided_greater
+  p_value_tie_handling: include_equal_as_null_exceedance
+  required_confirmation_processes: 7
+  missing_process_policy: invalidate_task_no_replacement
+  multiple_testing: benjamini_hochberg
+  false_discovery_rate: 0.05
+  labels:
+    - CONFIRMED_WIN
+    - SCREEN_ONLY_WIN
+    - INCONCLUSIVE
+    - BELOW_EAGER
+    - INVALID
+
+aggregate_analysis:
+  primary: true
+  screening_win_threshold: practical_speedup_margin
+  false_promotion_denominator: screening_wins_strictly_above_margin
+  selection_optimism: log_screen_speedup_minus_log_confirmation_speedup
+  task_bootstrap_samples: 20000
+  task_bootstrap_seed: 82081
+  task_bootstrap_interval: two_sided_percentile_95
+  per_task_bh_labels: secondary_strict_analysis
+
+controls:
+  calibration:
+    execution: separate_fresh_processes_before_screening
+    processes: 7
+    blocks_per_process: 20
+    process_seed_base: 71101
+  null:
+    comparison: persistent_eager_vs_identical_persistent_eager_wrapper
+    expected_center_speedup: 1.0
+  positive:
+    comparison: persistent_eager_vs_semantically_identical_wrapper_with_extra_gpu_work
+    target_slowdown_range: [0.02, 0.05]
+  lifecycle:
+    comparison: reconstruct_and_transfer_inside_timing_vs_persistent_reference
+    purpose: quantify_lifecycle_inflation_not_candidate_performance
+    execution: separate_disposable_processes_outside_primary_screening
+    timing: [synchronized_host_end_to_end, cuda_event_device]
+    processes: 3
+    blocks_per_process: 10
+    process_seed_base: 121071
+    max_tasks: 8
+    task_selection: first_selected_per_family_then_manifest_order
+
+campaign_validity:
+  required_before_screening: true
+  practical_speedup_margin: 0.02
+  null_control:
+    median_ratio_bounds: [0.995, 1.005]
+    must_not_trigger_practical_margin_promotion: true
+  known_slowdown_control:
+    minimum_detected_slowdown: 0.02
+    maximum_detected_slowdown: 0.08
+  lifecycle_control:
+    require_complete_host_and_device_records: true
+  incomplete_required_artifact_policy: invalidate_campaign_or_affected_task
+  failed_control_policy: no_candidate_performance_claims
+
+artifacts:
+  preserve_raw_block_times: true
+  preserve_process_environment: true
+  preserve_clock_power_temperature: true
+  preserve_gpu_uuid: true
+  preserve_precision_settings: true
+  hash_candidates: true
+  hash_input_snapshots: true
+  write_sha256_manifest: true
+
+environment:
+  precision:
+    allow_tf32_matmul: true
+    allow_tf32_cudnn: true
+    float32_matmul_precision: high

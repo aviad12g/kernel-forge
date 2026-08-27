@@ -149,7 +149,7 @@ def format_real_run_review(bundle: dict[str, Any]) -> str:
 
 
 def _behavior_counts(candidates: list[dict[str, Any]], classifications: dict[int, Any]) -> Counter:
-    counts = Counter()
+    counts: Counter[str] = Counter()
     for record in candidates:
         classification = classifications[id(record)]
         failure = classification.failure_type

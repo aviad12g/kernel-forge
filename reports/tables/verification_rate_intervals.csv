@@ -1,0 +1,7 @@
+study,source,successes,trials,rate,wilson_lo,wilson_hi,notes,evidence_status
+fused8,template,160,160,1.0000,0.9766,1.0000,fixed rigorous deterministic-template budget,supported_fused8_observation
+fused8,Gemini,23,24,0.9583,0.7976,0.9926,fixed shared fused8 prompt budget,supported_fused8_observation
+fused8,OpenAI mini,12,24,0.5000,0.3143,0.6857,fixed shared fused8 prompt budget; prompt not separately tuned,supported_fused8_observation
+Historical KB (affected): pilot,Gemini one-shot,3,20,0.1500,0.0524,0.3604,historical affected-adapter count; not model-accuracy evidence,historical_adapter_output_only
+Historical KB (affected): repair1,Gemini repair,1,8,0.1250,0.0224,0.4709,historical affected-adapter count; not repair-effectiveness evidence,historical_adapter_output_only
+Historical KB (affected): combined,Gemini one-shot + repair1,4,20,0.2000,0.0807,0.4160,historical affected-adapter count; not a current correctness rate,historical_adapter_output_only

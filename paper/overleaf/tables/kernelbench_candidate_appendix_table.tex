@@ -1,0 +1,19 @@
+\begin{table}[htbp]
+\centering
+\caption{Outcomes recorded by the affected historical KernelBench evaluator. Current policy and state-contract corrections prevent interpreting these rows as model capability.}
+\label{tab:kernelbench-candidate-appendix}
+\scriptsize
+\begin{tabularx}{\linewidth}{l l l l X}
+\toprule
+Task/category & Family & Label & Result & Note \\
+\midrule
+CE & loss & stable & 1.992x & IQR 0.0022 \\
+triplet & loss & stable & 4.176x & IQR 0.0005 \\
+matmul\_diagonal & matmul & below & 0.984x & IQR 0.0016 \\
+numeric failures & mixed & failed & 9 tasks & dominant failure category \\
+timeout/OOM & mixed & failed & 4 tasks & candidate execution failures \\
+runtime & conv & failed & 2 tasks & implementation exceptions \\
+Triton compile & mixed & failed & 2 tasks & compile errors \\
+\bottomrule
+\end{tabularx}
+\end{table}

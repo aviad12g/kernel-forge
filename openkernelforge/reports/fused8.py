@@ -5,7 +5,6 @@ from __future__ import annotations
 import json
 from collections import Counter, defaultdict
 from pathlib import Path
-from statistics import median
 from typing import Any
 
 from openkernelforge.reports.failure_taxonomy import classify_candidate_record

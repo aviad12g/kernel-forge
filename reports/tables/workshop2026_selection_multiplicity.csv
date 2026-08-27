@@ -1,0 +1,7 @@
+candidate_budget,eligible_tasks,task_resamples,apparent_win_rate,confirmed_win_rate,median_selection_optimism_log,selection_optimism_log_ci_lower,selection_optimism_log_ci_upper,practical_margin,confirmation_rule,notes
+1,4,4000,1.0,1.0,-0.0008423964156880626,-0.002821054310683807,0.0021012178875176673,0.02,independent_process_median_above_practical_margin,
+2,4,4000,1.0,1.0,-0.0006891332324869825,-0.0025229462763224353,0.0017911385806548227,0.02,independent_process_median_above_practical_margin,
+3,4,4000,1.0,1.0,-0.0006891332324869825,-0.0024007432869949095,0.001401713750195034,0.02,independent_process_median_above_practical_margin,
+5,4,4000,1.0,1.0,-0.0006891332324869825,-0.0022588667243273464,0.0010119334816077186,0.02,independent_process_median_above_practical_margin,
+10,4,4000,1.0,1.0,-0.0006891332324869825,-0.0019921606421475224,0.0009899639727756204,0.02,independent_process_median_above_practical_margin,
+20,4,4000,1.0,1.0,4.312564938269148e-06,-0.0014506043072234354,0.0007545107553083019,0.02,independent_process_median_above_practical_margin,

@@ -1,0 +1,7 @@
+candidate_budget,original_gpu,original_apparent_win_rate,original_confirmed_win_rate,same_gpu,same_gpu_apparent_win_rate,same_gpu_confirmed_win_rate,same_gpu_median_selection_optimism_log,same_gpu_eligible_tasks,interpretation
+1,T4,1.0,1.0,RTX A4500,1.0,1.0,-0.00033189767241281753,4,no_screen_confirmation_gap
+2,T4,1.0,1.0,RTX A4500,1.0,1.0,-0.00031681722743459595,4,no_screen_confirmation_gap
+3,T4,1.0,1.0,RTX A4500,1.0,1.0,-0.00030781466862894735,4,no_screen_confirmation_gap
+5,T4,1.0,1.0,RTX A4500,1.0,1.0,-0.00030015844165842687,4,no_screen_confirmation_gap
+10,T4,1.0,1.0,RTX A4500,1.0,1.0,-0.0002911251891944966,4,no_screen_confirmation_gap
+20,T4,1.0,1.0,RTX A4500,1.0,1.0,-0.00011208469309115232,4,no_screen_confirmation_gap

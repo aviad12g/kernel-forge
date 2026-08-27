@@ -101,7 +101,7 @@ class TemplateAgent:
             )
         total_possible = len(candidates)
         valid_candidates: list[CandidateSpec] = []
-        skipped = []
+        skipped: list[dict[str, object]] = []
         for candidate in candidates:
             validation = validate_template_variant(candidate.metadata) if validate_variants else None
             if validation is None or validation.valid:
@@ -116,16 +116,15 @@ class TemplateAgent:
                     )
                 )
             else:
-                skipped.append(
-                    {
-                        "task_id": task.task_id,
-                        "candidate_name": candidate.name,
-                        "template_metadata": dict(candidate.metadata),
-                        "rejection_reason": validation.rejection_reason,
-                        "warnings": list(validation.warnings),
-                        "source_type": "template_variant_validation",
-                    }
-                )
+                skipped_item: dict[str, object] = {
+                    "task_id": task.task_id,
+                    "candidate_name": candidate.name,
+                    "template_metadata": dict(candidate.metadata),
+                    "rejection_reason": validation.rejection_reason,
+                    "warnings": list(validation.warnings),
+                    "source_type": "template_variant_validation",
+                }
+                skipped.append(skipped_item)
         if record_skipped_variants:
             self.skipped_variants_by_task[task.task_id] = skipped
         ordered = _order_candidates(valid_candidates, sort_order)
@@ -193,6 +192,8 @@ def _str_list(value: object, default: tuple[str, ...]) -> list[str]:
 def _optional_int(value: object, default: int) -> int:
     if value is None:
         return default
+    if not isinstance(value, (str, int)):
+        raise TypeError(f"Expected an integer template option, got {type(value).__name__}")
     return int(value)
 
 
@@ -237,12 +238,12 @@ def _order_candidates(candidates: list[CandidateSpec], sort_order: str) -> list[
 def _candidate_order_key(candidate: CandidateSpec) -> tuple:
     metadata = candidate.metadata
     return (
-        int(metadata.get("block_size", 0)),
-        int(metadata.get("num_warps", 0)),
-        int(metadata.get("num_stages", 0)),
+        _optional_int(metadata.get("block_size"), 0),
+        _optional_int(metadata.get("num_warps"), 0),
+        _optional_int(metadata.get("num_stages"), 0),
         str(metadata.get("contiguous_policy", "")),
         str(metadata.get("output_allocation_policy", "")),
         str(metadata.get("n_elements_mode", "")),
         str(metadata.get("feature_dim_mode", "")),
-        int(metadata.get("reduction_block_size") or 0),
+        _optional_int(metadata.get("reduction_block_size"), 0),
     )

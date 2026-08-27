@@ -1,4 +1,5 @@
 import json
+import sys
 from pathlib import Path
 
 from openkernelforge.config import load_config
@@ -78,6 +79,9 @@ def test_skipped_variant_counts_appear_in_template_report(tmp_path):
 
 def test_repeatability_report_generated_with_mocked_benchmark(monkeypatch, tmp_path):
     run_dir = _synthetic_run(tmp_path / "repeatability")
+    candidate_modules_before = {
+        name for name in sys.modules if name.startswith("openkernelforge_candidate_")
+    }
 
     def fake_benchmark_task(*args, **kwargs):
         return BenchmarkResult(
@@ -100,6 +104,10 @@ def test_repeatability_report_generated_with_mocked_benchmark(monkeypatch, tmp_p
     data = json.loads(json_path.read_text(encoding="utf-8"))
     assert data["results"][0]["stats"]["median"] == 1.25
     assert "Repeatability Report" in report.read_text(encoding="utf-8")
+    candidate_modules_after = {
+        name for name in sys.modules if name.startswith("openkernelforge_candidate_")
+    }
+    assert candidate_modules_after == candidate_modules_before
 
 
 def test_final_3task_report_generated_from_synthetic_runs(tmp_path):

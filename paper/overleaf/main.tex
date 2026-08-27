@@ -1,0 +1,64 @@
+\documentclass[10pt]{article}
+
+\usepackage[margin=0.78in]{geometry}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{siunitx}
+\usepackage{adjustbox}
+\usepackage{multirow}
+\usepackage{pdflscape}
+\usepackage{placeins}
+
+\graphicspath{{figures/}}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!45!black,
+  citecolor=blue!45!black,
+  urlcolor=blue!45!black
+}
+
+\newcommand{\okf}{OpenKernelForge}
+\newcommand{\speed}[1]{#1$\times$}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\compile}{\code{torch.compile max-autotune}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\setlist[itemize]{leftmargin=*, topsep=2pt, itemsep=2pt}
+\captionsetup{font=small, labelfont=bf}
+
+\title{\okf: Repeatability-Aware Evaluation for LLM-Generated Triton Kernels}
+\author{Anonymous Authors}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\input{sections/abstract}
+\end{abstract}
+
+\input{sections/introduction}
+\input{sections/methodology}
+\input{sections/experiments}
+\input{sections/discussion}
+\input{sections/related_work}
+\input{sections/limitations}
+\input{sections/conclusion}
+
+\FloatBarrier
+\bibliographystyle{plain}
+\bibliography{references}
+
+\FloatBarrier
+\clearpage
+\appendix
+\input{sections/appendix}
+
+\end{document}

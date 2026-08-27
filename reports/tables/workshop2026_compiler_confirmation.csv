@@ -1,0 +1,2 @@
+task,candidate,gpu,fresh_processes,median_candidate_vs_compile,min_process_median,max_process_median,above_1_02,validation_role
+Matmul_with_diagonal_matrices,candidate_000,NVIDIA RTX A4500,7,2.0011645126517266,1.9933072065754605,2.003076509308902,true,separate_cross_gpu_compiler_rung_confirmation

@@ -1,0 +1,47 @@
+\section{Positioning, limitations, and conclusion}
+
+KernelBench measures generated-kernel capability at scale~\citep{kernelbench2025};
+KernelBench-Verified adds hidden distributions, realistic precision settings,
+and memory analysis~\citep{zhang2026kernelbenchverified}; robust-kbench broadens
+verification scenarios~\citep{lange2025robustkbench}; and FastKernels studies
+production alignment~\citep{oliaro2026fastkernels}. Harness Engineering archives
+workload-grounded optimization evidence~\citep{shui2026harness}. \system{} does
+not compete on generation capability. Its narrower focus is the statistical and
+lifecycle validity of promoting one measured winner after candidate search.
+Contract-Grade Verifier formalizes structural and behavioral kernel
+contracts~\citep{shah2026contractgrade}, while Correct but Slow shows that weak
+verification can admit semantically deficient kernels that appear
+fast~\citep{li2026correctslow}. Our verifier adopts the directly enforceable
+output-tree, alias, mutation, special-value, and repeated-execution checks, while
+leaving task-specific distribution and precision oracles explicit rather than
+claiming generic coverage.
+
+The external study is limited to one Tesla T4, a deterministic feasible subset
+rather than a random sample of KernelBench L1, one model, and three candidates
+per task. The fused8 studies cover four tasks in one shape regime. The
+near-threshold stress test and an easy-grid hardware control ran on one RTX
+A4500. Its four-task bootstrap interval is
+wide, and calibration intentionally enriches near-threshold candidates rather
+than estimating their natural frequency. The 38/48 invalid-task count and the
+fact that every valid task is matrix multiplication show that candidate validity
+and family structure dominate this campaign. Seven processes across two time
+periods provide a practical holdout check but not precise tail modeling. The
+fixed 2\% promotion margin is a
+prespecified practical threshold, not a noise-calibrated equivalence bound.
+Candidate generation is model-specific,
+whereas both multiplicity regimes use deterministic templates; the studies
+answer different questions. CUDA graphs, multi-GPU replication, deployment-cost
+amortization, and benchmark-wide model comparisons are outside scope.
+Compiler-relative evidence is also limited: the baseline was available for
+47/48 selected tasks and all 10 valid-task winners at screening, while only one
+frozen winner received separate fresh-process compiler confirmation.
+
+Generated-kernel systems need more than plausible source and one fast timing
+sample. The completed protocol makes screening, confirmation, and evaluator
+validity separately auditable. Here it changes the defensible conclusion: the
+corrected external campaign supports no above-eager kernel claim, the easy grid
+bounds multiplicity concerns, the calibrated stress test exposes a screen-only
+promotion, and the lifecycle ablation isolates a host-timing confound.
+Independent re-evaluation is therefore a useful default for generated-kernel
+claims, even when its result is a bound or a null finding rather than a new
+speedup.

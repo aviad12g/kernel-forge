@@ -1,0 +1,18 @@
+study,source,task,metric,median_available,iqr_available,ci_available,std_cv_available,artifact_source,notes
+fused8,template,aggregate,median_speedup_vs_eager,yes,no,no,no,reports/tables/fused8_model_comparison.csv,local package contains imported medians and labels; p25/p75 and bootstrap intervals are not preserved
+fused8,Gemini,aggregate,median_speedup_vs_eager,yes,no,no,no,reports/tables/fused8_model_comparison.csv,local package contains imported medians and labels; p25/p75 and bootstrap intervals are not preserved
+fused8,OpenAI mini,aggregate,median_speedup_vs_eager,yes,no,no,no,reports/tables/fused8_model_comparison.csv,local package contains imported medians and labels; p25/p75 and bootstrap intervals are not preserved
+fused8,n/a,bias_relu,repeat_median_speedup_vs_eager,yes,no,no,no,reports/tables/fused8_stable_winners.csv,repeat median preserved; interval samples not present in this local workspace
+fused8,n/a,sigmoid,repeat_median_speedup_vs_eager,yes,no,no,yes,runs/20260520_163344,"std 0.029, CV 0.030"
+fused8,n/a,add_relu,repeat_median_speedup_vs_eager,yes,no,no,yes,runs/20260520_163344,"std 0.003, CV 0.003"
+fused8,llm,residual,repeat_median_speedup_vs_eager,yes,no,no,yes,runs/20260520_163607,"std 0.048, CV 0.045"
+fused8,template,bias_gelu,repeat_median_speedup_vs_eager,yes,no,no,no,reports/tables/fused8_stable_winners.csv,repeat median preserved; interval samples not present in this local workspace
+fused8,n/a,row_sum,repeat_median_speedup_vs_eager,yes,no,no,no,reports/tables/fused8_stable_winners.csv,repeat median preserved; interval samples not present in this local workspace
+fused8,n/a,layernorm,repeat_median_speedup_vs_eager,yes,no,no,no,reports/tables/fused8_stable_winners.csv,repeat median preserved; interval samples not present in this local workspace
+fused8,template,rmsnorm,repeat_median_speedup_vs_eager,yes,no,no,no,reports/tables/fused8_stable_winners.csv,repeat median preserved; interval samples not present in this local workspace
+KernelBench L1 pilot,Gemini one-shot,CrossEntropyLoss,speedup_vs_eager,yes,yes,no,no,artifacts/runpod_imports/runs/20260520_202314/results.jsonl,speedup IQR 0.0022 is preserved as affected-adapter audit metadata; it is not performance evidence
+KernelBench L1 pilot,Gemini one-shot,TripletMarginLoss,speedup_vs_eager,yes,yes,no,no,artifacts/runpod_imports/runs/20260520_202314/results.jsonl,speedup IQR 0.0005 is preserved as affected-adapter audit metadata; it is not performance evidence
+KernelBench L1 pilot,Gemini one-shot,Matmul_with_diagonal_matrices,speedup_vs_eager,yes,yes,no,no,artifacts/runpod_imports/runs/20260520_202314/results.jsonl,speedup IQR 0.0016 is preserved as affected-adapter audit metadata; it is not performance evidence
+KernelBench L1 repair1,Gemini repair,KLDivLoss,speedup_vs_eager,yes,yes,no,no,artifacts/runpod_imports/runs/20260520_213128/results.jsonl,speedup IQR 0.0003 is preserved as affected-adapter audit metadata; it is not performance evidence
+KernelBench L1 pilot,Gemini one-shot,verified candidates,candidate/eager/compile_ms_summary,yes,yes,yes,yes,artifacts/runpod_imports/runs/20260520_202314/results.jsonl,"timing summaries preserve p25/p75/IQR/std/CV/bootstrap fields for affected-adapter rows only; they are not performance evidence"
+KernelBench L1 repair1,Gemini repair,KLDivLoss,candidate/eager/compile_ms_summary,yes,yes,yes,yes,artifacts/runpod_imports/runs/20260520_213128/results.jsonl,timing summaries preserve p25/p75/IQR/std/CV/bootstrap fields for an affected-adapter repair row only; they are not performance evidence

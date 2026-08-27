@@ -1,0 +1,15 @@
+\begin{table}[htbp]
+\centering
+\caption{Rigorous fused8 summary. Models beat the compiler baseline at median, but all sources remain below eager at median; deterministic templates remain the strongest floor.}
+\label{tab:fused8-summary}
+\small
+\begin{tabularx}{\linewidth}{l r l r r X}
+\toprule
+Source & Cand. & Verified & Eager & Compile & Stable wins \\
+\midrule
+template & 160 & 160/160 & 0.945x & 1.079x & residual, bias\_gelu, rmsnorm \\
+Gemini & 24 & 23/24 & 0.923x & 1.863x & bias\_gelu, rmsnorm \\
+OpenAI mini & 24 & 12/24 & 0.888x & 1.835x & residual \\
+\bottomrule
+\end{tabularx}
+\end{table}

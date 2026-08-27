@@ -14,8 +14,10 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=7.0"]
+dev = ["pytest>=7.0", "ruff>=0.16", "mypy>=2.3"]
 triton = ["triton"]
+llm = ["requests>=2.31"]
+paper = ["matplotlib>=3.7", "Pillow>=10", "pypdf>=4", "reportlab>=4"]
 
 [project.scripts]
 openkernelforge = "openkernelforge.cli:main"
@@ -26,3 +28,11 @@ include = ["openkernelforge*"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
+ignore = ["E402"]
+
+[tool.mypy]
+python_version = "3.10"
+ignore_missing_imports = true

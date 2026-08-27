@@ -199,7 +199,12 @@ def _best_by_task(records: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
         if speedup is None:
             continue
         task_id = str(record.get("task_id"))
-        if task_id not in best or float(speedup) > float((best[task_id].get("benchmark_summary") or {}).get("speedup_vs_eager")):
+        current = (
+            (best[task_id].get("benchmark_summary") or {}).get("speedup_vs_eager")
+            if task_id in best
+            else None
+        )
+        if current is None or float(speedup) > float(current):
             best[task_id] = record
     return best
 

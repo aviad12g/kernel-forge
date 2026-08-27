@@ -2,18 +2,96 @@
 
 Use this checklist before publishing the repository, sharing a report bundle, or starting the next benchmark phase.
 
-- [ ] `pytest -q` passes.
-- [ ] `python scripts/check_research_artifacts.py` passes.
-- [ ] `python scripts/validate_research_package.py` passes, or missing artifacts are explicitly documented.
-- [ ] No secrets are present in reports, run artifacts, configs, datasets, or logs.
-- [ ] README has been reviewed for accuracy.
+- [x] `pytest -q` passes.
+- [x] `python scripts/check_research_artifacts.py` passes.
+- [x] `python scripts/validate_research_package.py` passes, or missing artifacts are explicitly documented.
+- [x] No literal API-key-like tokens are present in reports, run artifacts, configs, datasets, or logs.
+- [x] README has been reviewed for accuracy.
 - [ ] `reports/openkernelforge_technical_report.md` has been reviewed.
 - [ ] Dataset README is present for any imported curated dataset.
 - [ ] Run artifacts are imported under `artifacts/` or explicitly marked missing in `reports/artifact_index.md`.
-- [ ] The report makes no SOTA claim.
-- [ ] Limitations are stated clearly.
-- [ ] License file is present or marked TODO before public release.
-- [ ] Citation/BibTeX entry is TODO if a formal artifact release is planned.
-- [ ] Decide whether to publish full run artifacts, only reports, or a reduced sanitized artifact bundle.
+- [ ] KernelBench pilot, failure taxonomy, repair run, and comparison artifacts are listed in `reports/artifact_index.md`.
+- [ ] KernelBench repair workflow is documented in `reports/reproducibility.md`.
+- [x] Citation keys are clean and TODO citation notes appear only in checklist/internal notes, not the paper body.
+- [ ] Main tables include uncertainty availability or IQR/CI notes.
+- [ ] KernelBench feasible-subset selection rule is visible in paper and reproducibility docs.
+- [x] Overleaf package under `paper/overleaf/` is self-contained for a clean Overleaf project.
+- [ ] `scripts/build_paper_assets.py` regenerates table `.tex` files and figure assets from checked-in CSVs.
+- [x] `docs/methodology/repeatability_label_spec.md` defines the implemented repeatability labels.
+- [x] `docs/methodology/static_policy_checks.md` and the paper policy table match implemented policy checks.
+- [x] `docs/methodology/timing_protocol.md` specifies CUDA events, sample counts, sessions, and cache-state perturbation.
+- [x] `docs/methodology/environment.md` records known environment fields and explicitly marks clock/power/thermal controls as not recorded.
+- [x] Prompt templates, decoding settings, fused8 shapes/tolerances, and KernelBench repairability criteria are documented.
+- [x] `python scripts/check_methodology_docs.py` passes.
+- [x] Wilson verification-rate intervals are generated in `reports/tables/verification_rate_intervals.csv`.
+- [x] Historical KernelBench family-level and memory-filter summaries are generated and marked provisional.
+- [x] Single-run/repeat flip-frequency availability is documented without fabricating missing per-candidate data.
+- [x] Multiplicity, stable-win-count, and three-session variance caveats are stated.
+- [x] Historical KernelBench family outcomes, memory filtering, and repairability provenance are documented as evaluator-audit metadata.
+- [x] Historical KernelBench loss profiler files are marked debugging artifacts rather than mechanism evidence.
+- [x] Qualitative eager-baseline notes, compile-time availability, and CUDA graphs limitation are documented.
+- [x] Artifact import was attempted into `artifacts/runpod_imports/` with a manifest and SHA256 checksums.
+- [x] Fused8 uncertainty recovery status is documented; full rigorous fused8 run directories remain missing locally.
+- [x] Historical profiler diagnostics were collected for CE, Triplet, and KLDiv and are now excluded from paper evidence because they inherit the affected reference lifecycle.
+- [x] KernelBench loss profiler script writes candidate availability, operator, memory, and mechanism-status tables without generating candidates or changing benchmark results.
+- [x] Historical clock-recorded rows are preserved but no longer used as label-persistence evidence.
+- [x] Clock locking attempt is documented as permission-rejected, and fused8 headline rows are marked unavailable because exact candidate artifacts are not preserved locally.
+- [x] Paper contribution is framed as evaluation methodology and artifact preservation, not generation capability.
+- [x] Positioning table distinguishes OpenKernelForge from KernelBench, CUDA-L1, compiler systems, and systems-measurement work.
+- [x] Measurement-reliability and repair-related related work have been reframed with explicit boundaries.
+- [x] `python scripts/check_citations.py` passes for Overleaf citation keys.
+- [x] Example generated-candidate appendix added from preserved artifacts.
+- [x] Overleaf package README added and package contents checked.
+- [x] PDF text/order checker added.
+- [x] Final README and reproducibility guide mention Overleaf build flow and example appendix.
+- [x] Two-labeler mapping clarified for imported fused8 summaries; historical KernelBench label fields are explicitly provisional.
+- [x] Legacy `CV <= 0.10` and rigorous `tau = 0.98` thresholds are documented as fixed defaults; available artifacts do not support a full threshold-sensitivity claim.
+- [x] Fused8 `[4096, 1024]` single-shape-regime limitation is stated.
+- [x] Model identifier audit records configured API strings and whether provider response model fields were preserved.
+- [x] Positioning table moved out of the main body and compacted in the appendix.
+- [x] Historical KernelBench Wilson intervals are retained only as affected-evaluator audit metadata.
+- [x] Candidate-level Fisher comparison removed because multiple candidates share each fused8 task.
+- [x] Official NeurIPS 2026 workshop source and strict four-page build check added under `paper/workshop2026/`.
+- [x] Performance-blind task freezer, fresh-process holdout analysis, and evaluator controls are implemented and CPU-tested.
+- [x] Pre-generation amendment from 50 to 48 primary tasks records that only 49 pinned L1 tasks meet the unchanged 8 GiB cap and reserves one feasible task for the excluded-task shakedown.
+- [x] RQ2 moved to a separate 20-candidate-per-task study with independent confirmation for every valid candidate.
+- [x] Near-threshold RQ2 stress test calibrated on disjoint data, frozen before primary screening, and completed with seven-process confirmation for all 32 candidates.
+- [x] Near-threshold v1/v2 calibration dispositions retained as design provenance; neither contributes a primary estimate.
+- [x] Near-threshold result reported as one observed screen-only promotion with a four-task interval that includes zero.
+- [x] Easy deterministic grid replicated on the same RTX A4500 as the near-threshold study; 32/32 worker records and checksum ledger verify.
+- [x] One frozen compiler-relative winner rechecked in seven fresh RTX A4500 processes; compiler rung confirmed without changing the below-eager primary result.
+- [x] Aggregate RQ1 outcomes and task-bootstrap optimism interval are primary; strict BH labels are secondary.
+- [x] Reconstruct-per-call lifecycle control is isolated from primary timing and preserves host and enclosing-event diagnostics.
+- [x] Formal calibration plus lifecycle campaign-validity gate blocks screening on missing or failed controls.
+- [x] Confirmation requires all seven processes in two non-adaptive temporal waves with no replacement.
+- [x] Five-seed correctness checks deterministic repeats, exact output trees, alias contracts, mutation, and special values.
+- [x] Excluded-task shakedown passed and corrected three-panel result figure was regenerated from final artifacts.
+- [x] Frozen task manifest and corrected GPU holdout artifacts collected before strict paper build.
+- [x] Controlled multiplicity artifacts collected, checksumed, and traced before strict paper build.
+- [x] Optional future fused8 locked-clock sanity check listed: rerun exact fused8 headline candidates under locked GPU clocks only after full artifacts are imported.
+- [x] References render as one uninterrupted section before the appendix.
+- [x] Appendix tables stay after `\appendix` and do not float into references.
+- [x] `python scripts/check_paper_text_clean.py` passes with no soft-hyphen, control-character, or replacement-character findings.
+- [x] KernelBench body summary table is compact; detailed task and repair rows stay in the appendix.
+- [x] PDF figures and body tables are readable after rendering.
+- [x] Workshop title reframed around auditing and holdout re-evaluation rather than implying a successful speedup claim.
+- [x] Corrected candidate failures partitioned into policy, contract, correctness, compile/runtime, pass, and baseline-blocked categories from frozen artifacts.
+- [x] Compiler-baseline rung reported separately from the primary eager-relative promotion claim.
+- [x] The 2% margin is identified as a prespecified practical threshold, not a post-hoc noise-calibrated bound.
+- [x] Multiplicity figure shows log selection optimism with post-hoc task-bootstrap intervals instead of overlapping 1.0 win-rate lines.
+- [x] Review and submission-upload LaTeX builds use separate notice modes; preparing the upload artifact is not recorded as submission.
+- [x] The report makes no SOTA claim.
+- [x] Corrected KernelBench adapter uses persistent, equally seeded reference `Model` and candidate `ModelNew` instances outside timed regions.
+- [x] Every official KernelBench `Model` task requires `ModelNew`; free functions are limited to local synthetic tasks.
+- [x] Current AST policy re-audit is preserved in `reports/tables/kernelbench_historical_policy_reaudit.csv`.
+- [x] Historical KernelBench correctness, speed, profiler, and clock rows are excluded from supported paper claims.
+- [x] Corrected CUDA campaign wrapper, baseline-only configs, source bundle, commit pin, five-task gate, wall-time limit, and checksum manifest are prepared and CPU-tested.
+- [x] Corrected workshop baseline, candidate screening, and fresh-process confirmation executed on CUDA.
+- [x] Corrected candidates were frozen before screening and independently confirmed before inclusion.
+- [x] Limitations are stated clearly.
+- [x] MIT license file is present for public release.
+- [x] `CITATION.cff` identifies the software and workshop paper.
+- [x] Reduced sanitized artifact bundle selected; model credentials, caches, and unrelated files are excluded.
+- [x] Frozen deterministic candidate restoration is fail-closed on source and metadata SHA-256 values.
 
-Current release posture: suitable for internal research review after artifact import and validation. Not yet a KernelBench result, not a trained model release, and not a SOTA claim.
+Current release posture: the completed corrected campaign and four-page paper are ready for external review. The paper reports a bounded re-evaluation result, not a full KernelBench or SOTA claim. The public repository includes an MIT license and citation metadata; the release bundle is restricted to sanitized, checksummed campaign evidence.

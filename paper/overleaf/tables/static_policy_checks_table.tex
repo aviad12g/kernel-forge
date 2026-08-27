@@ -1,0 +1,21 @@
+\begin{table}[htbp]
+\centering
+\caption{Static policy checks. Policy rejects common fallback and escape patterns before execution; it is a guardrail rather than an operating-system sandbox.}
+\label{tab:static-policy}
+\small
+\begin{tabularx}{\linewidth}{l Y Y}
+\toprule
+Check & Detection method & Purpose \\
+\midrule
+Syntax & Parse with Python AST & Reject unimportable candidates \\
+Forward entry point & Module \code{forward} or \code{ModelNew.forward}; reason \code{missing\_forward} & Enforce task contract \\
+Reference imports & Import names/modules containing task or reference paths; reason \code{imports\_reference\_or\_task\_module} & Block direct task-reference access \\
+Import allowlist & Reject unsafe modules, noncanonical aliases (\code{disallowed\_import\_alias}), and direct Torch compute imports (\code{disallowed\_from\_torch\_import}) & Limit common escape and alias paths \\
+Import-time calls & Scan module/class bodies, decorators, and function defaults; allow standard Triton configuration and decorators (\code{import\_time\_call}) & Prevent side effects before verification \\
+Unsafe calls & Reject \code{open}, dynamic code, process, and subprocess calls & Limit common execution escape paths \\
+Reference calls & Calls such as \code{reference}, \code{ref\_forward}, or \code{torch\_forward}; reason \code{calls\_suspicious\_function} & Block routing through reference code \\
+Torch fallback & Calls, tensor arithmetic, data views, and non-metadata tensor methods in reachable wrappers; reason \code{obvious\_torch\_fallback} & Reject PyTorch compute hidden behind aliases or helpers \\
+Triton launch & Match a JIT kernel to a reachable indexed launch & Reject import-only or unreachable Triton usage \\
+\bottomrule
+\end{tabularx}
+\end{table}

@@ -11,7 +11,8 @@ from typing import Any
 
 from openkernelforge.config import RunConfig
 from openkernelforge.harness.benchmarker import benchmark_task
-from openkernelforge.harness.sandbox import load_candidate_from_path
+from openkernelforge.harness.policy import check_candidate_policy
+from openkernelforge.harness.sandbox import load_candidate_from_path, unload_candidate
 from openkernelforge.reports.run_data import load_run_bundle
 from openkernelforge.tasks.simple_tasks import get_task
 
@@ -47,8 +48,22 @@ def collect_repeatability_results(
         candidate_medians: list[float] = []
         errors: list[str] = []
         for _ in range(repeats):
+            loaded = None
             try:
+                source = candidate_path.read_text(encoding="utf-8", errors="strict")
+                policy = check_candidate_policy(
+                    source,
+                    allow_torch_fallback=config.agent.allow_torch_fallback,
+                    require_triton=not config.agent.allow_torch_fallback,
+                )
+                if not policy.passed:
+                    raise RuntimeError(
+                        "candidate failed current policy before repeatability timing: "
+                        f"{policy.rejection_reason}"
+                    )
                 loaded = load_candidate_from_path(candidate_path)
+                if loaded.forward is None:
+                    raise RuntimeError(f"candidate has no module-level forward: {candidate_path}")
                 summary = record.get("benchmark_summary") or {}
                 shape = tuple(summary.get("shape") or task.benchmark_shapes[0])
                 benchmark = benchmark_task(
@@ -76,12 +91,16 @@ def collect_repeatability_results(
                     speedups.append(float(benchmark.speedup_vs_eager))
                 if benchmark.speedup_vs_torch_compile is not None:
                     compile_speedups.append(float(benchmark.speedup_vs_torch_compile))
-                if benchmark.candidate is not None:
-                    candidate_medians.append(float(benchmark.candidate.median_ms))
+                aggregate_candidate = benchmark.candidate_ms_summary or {}
+                if aggregate_candidate.get("median_ms") is not None:
+                    candidate_medians.append(float(aggregate_candidate["median_ms"]))
                 if benchmark.compile_error:
                     errors.append("torch.compile error:\n" + benchmark.compile_error)
             except Exception:
                 errors.append(traceback.format_exc())
+            finally:
+                if loaded is not None:
+                    unload_candidate(loaded)
         stats = _stats(speedups)
         stable = _is_stable(speedups)
         rows.append(
@@ -159,7 +178,7 @@ def format_repeatability_report(run_dir: str | Path, rows: list[dict[str, Any]])
         if not valid:
             lines.append(f"- {task_id}: no successful repeatability measurements")
             continue
-        best = max(valid, key=lambda row: float((row.get("stats") or {}).get("median")))
+        best = max(valid, key=_repeat_median)
         lines.append(
             f"- {task_id}: `{best.get('candidate_id')}` median repeat "
             f"{_fmt((best.get('stats') or {}).get('median'))}x, label={best.get('label')}, "
@@ -183,11 +202,25 @@ def _top_candidates_by_task(records: list[dict[str, Any]], *, top_k: int) -> lis
         selected.extend(
             sorted(
                 records_for_task,
-                key=lambda record: float((record.get("benchmark_summary") or {}).get("speedup_vs_eager")),
+                key=_record_speedup_vs_eager,
                 reverse=True,
             )[:top_k]
         )
     return selected
+
+
+def _repeat_median(row: dict[str, Any]) -> float:
+    value = (row.get("stats") or {}).get("median")
+    if value is None:
+        raise ValueError("Repeatability row has no median")
+    return float(value)
+
+
+def _record_speedup_vs_eager(record: dict[str, Any]) -> float:
+    value = (record.get("benchmark_summary") or {}).get("speedup_vs_eager")
+    if value is None:
+        raise ValueError("Candidate record has no eager speedup")
+    return float(value)
 
 
 def classify_repeatability_label(

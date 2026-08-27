@@ -1,0 +1,62 @@
+\section{Internal Fused8 Study}
+
+The fused8 study is the controlled comparison. Deterministic templates, Gemini, and OpenAI mini use the same task suite, verification harness, timing protocol, compiler baseline, and repeatability labels. The suite uses one primary shape regime centered on \code{[4096, 1024]}, so this section characterizes a controlled regime rather than scaling behavior. Table~\ref{tab:fused8-summary} summarizes the primary results.
+
+\input{tables/fused8_summary_table}
+
+The imported fused8 summaries preserve repeat medians and labels, but not full interval statistics. Historical KernelBench files preserve across-session speedup IQR fields, but the adapter audit makes those intervals non-evidentiary. The uncertainty inventory is summarized in Appendix Table~\ref{tab:fused8-task-appendix}.
+
+The template sweep is the strongest overall floor: it verifies all 160 candidates and supplies three repeat-stable wins. Gemini has the highest fused8 model correctness, verifying 23/24 candidates and finding stable wins on \code{bias\_gelu} and \code{rmsnorm}. OpenAI mini verifies 12/24 candidates, but contributes the only model-over-template stable fused8 win: \code{residual} at \speed{1.074} versus the template repeat median of \speed{1.023}. Figures~\ref{fig:fused8-source} and~\ref{fig:fused8-stable} separate source-level coverage from the task-level winners. This comparison should be read as a protocol result under one shared prompt budget, not as a definitive ranking of model families.
+
+Verification rates are reported with descriptive Wilson intervals in Appendix Table~\ref{tab:statistical-summary}. Candidates are clustered within eight tasks and candidate budgets differ by source, so candidate-level intervals and counts must not be interpreted as independent-sample model-family rankings. Gemini verifies 23/24 fused8 candidates while OpenAI mini verifies 12/24 under the shared, untuned prompt protocol.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.82\linewidth]{fused8_source_summary.pdf}
+\caption{Fused8 source comparison. Templates provide the largest candidate pool and strongest floor; Gemini verifies nearly all candidates; OpenAI mini verifies fewer candidates but contributes one stable win.}
+\label{fig:fused8-source}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.72\linewidth]{fused8_stable_speedups.pdf}
+\caption{Repeat-stable fused8 winners. Only above-eager repeat-stable wins are shown; the horizontal line marks eager parity.}
+\label{fig:fused8-stable}
+\end{figure}
+
+\subsection{Compiler Wins and Eager Wins Are Different Claims}
+
+Gemini and OpenAI mini are strong relative to \compile{} on fused8, with median speedups of \speed{1.863} and \speed{1.835}. Both remain below PyTorch eager at median. This is not contradictory. PyTorch eager often dispatches to specialized library kernels or tuned ATen paths, while compiler-generated code can be weaker for the small shapes used here. A generated Triton kernel that beats \compile{} is not necessarily a universal replacement for eager. The result is a characterization of where generated kernels may help, not a state of the art claim.
+
+\subsection{A Single-Run Win That Disappears}
+
+The clearest repeatability example is deterministic rather than stochastic. As Figure~\ref{fig:bias-relu} shows, the \code{bias\_relu} template reaches \speed{1.029} in one run but falls to a repeat median of \speed{0.976}, changing its label to \code{SINGLE\_RUN\_ONLY\_WIN}. Because the candidate is deterministic, the flip is a measurement and repeatability issue, not model randomness. This motivates assigning repeatability labels even to template-generated kernels.
+
+The imported task-best template table contains four task-best rows above eager in the single-run summary; one of those four falls below eager after repeat measurement. The full 160-candidate per-candidate flip frequency is not preserved in the local artifact package, so the paper treats \code{bias\_relu} as an illustrative case rather than a global flip-rate estimate.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.62\linewidth]{bias_relu_single_run_flip.pdf}
+\caption{The deterministic \code{bias\_relu} template crosses eager in a single run but falls below eager by repeat median. This is the smallest clean example of why repeatability labels are necessary.}
+\label{fig:bias-relu}
+\end{figure}
+
+\FloatBarrier
+
+\section{KernelBench Adapter Audit}
+
+The preserved KernelBench run loaded a 100-task pool, selected 20 tasks after an input-footprint filter, generated one Gemini candidate per task, and attempted one repair on eight failures. Those files provide a useful trace of generation, verification, timing, and failure classification. They do not, however, support an external performance claim under the corrected implementation.
+
+\input{tables/kernelbench_summary_table}
+
+The audit identified two coupled defects. First, the historical prompt required a free \code{forward(*args)} receiving only \code{get\_inputs()}, although official KernelBench tasks require \code{ModelNew} initialized from \code{get\_init\_inputs()}. The contract mismatch affected every selected task; for parameterized convolution tasks it also left candidates with no valid route to the reference weights. Second, the reference wrapper constructed \code{Model} and moved it to the device inside every call, while generated candidates were persistent. CUDA-event baseline measurements could consequently include initialization, transfer, or host-submission delay not paid by the candidate.
+
+The corrected adapter materializes one seeded initialization-argument snapshot and constructs persistent reference \code{Model} and candidate \code{ModelNew} instances from it before warmup and timing. All official \code{Model} tasks reject free-function candidates. The benchmark now rotates eager, candidate, and compiled order between sessions, reports session-level uncertainty, and materializes lazy compilation before runtime samples. CPU-only regression tests cover initialization equality, persistent construction, empty-state contract rejection, and failed-import cleanup.
+
+For auditability, the appendix preserves the historical observations: 3/20 candidates verified in the original one-shot run, one of eight repairs verified, and the observed wins concentrated in loss tasks. The combined historical proportion was 4/20 with Wilson interval $[0.0807, 0.4160]$. These values describe what the affected evaluator recorded; they are not estimates of Gemini accuracy or KernelBench performance. Likewise, historical profiler and clock-recorded diagnostics inherit the old reference lifecycle and are not used for mechanism or speedup claims.
+
+This failure is itself relevant to generated-kernel evaluation. Artifact preservation allowed the candidate contract, reference lifecycle, prompts, and timing records to be inspected together rather than silently relabeling outputs. Corrected GPU revalidation is required before the KernelBench rows can return to the supported-results section.
+
+Appendix Table~\ref{tab:kernelbench-family-summary} and the historical funnel and taxonomy figures retain the affected pilot for diagnosis, clearly separated from the controlled fused8 evidence.
+
+\FloatBarrier

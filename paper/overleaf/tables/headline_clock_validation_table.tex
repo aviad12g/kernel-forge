@@ -1,0 +1,19 @@
+\begin{table}[htbp]
+\centering
+\caption{Historical clock-recorded rerun. Repetition under recorded clocks does not repair the affected KernelBench state contract or reference lifecycle, so these rows are debugging artifacts only.}
+\label{tab:headline-clock-validation}
+\scriptsize
+\begin{tabularx}{\linewidth}{l l l l r l l}
+\toprule
+Task & Source & Old label & Validation & Speedup & Changed & Status \\
+\midrule
+bias\_relu & template & single-only & unavailable & not available & unknown & unavailable \\
+residual & OpenAI mini & stable & unavailable & not available & unknown & unavailable \\
+bias\_gelu & template & stable & unavailable & not available & unknown & unavailable \\
+rmsnorm & template & stable & unavailable & not available & unknown & unavailable \\
+CE & Gemini one-shot & stable & stable & 1.856x & no & historical\_debug\_replay \\
+Triplet & Gemini one-shot & stable & stable & 4.046x & no & historical\_debug\_replay \\
+KLDiv & Gemini repair1 & stable & stable & 1.834x & no & historical\_debug\_replay \\
+\bottomrule
+\end{tabularx}
+\end{table}

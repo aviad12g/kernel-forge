@@ -1,0 +1,15 @@
+\begin{table}[htbp]
+\centering
+\caption{Post-hoc KernelBench adapter audit. The corrected implementation removes three defects before external revalidation.}
+\label{tab:kernelbench-summary}
+\small
+\begin{tabularx}{\linewidth}{l X X}
+\toprule
+Audit item & Historical behavior & Corrected behavior \\
+\midrule
+State contract & Free \code{forward(*args)} received only runtime inputs & Require \code{ModelNew} for every official \code{Model} task \\
+Reference lifecycle & Rebuilt and transferred \code{Model} inside each call & Construct persistent modules from one seeded init-input snapshot \\
+Static policy & Accepted high-level Torch fallback and import-time construction & Apply reachable-call AST policy and require an actual reachable Triton launch \\
+\bottomrule
+\end{tabularx}
+\end{table}

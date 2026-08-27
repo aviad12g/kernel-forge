@@ -21,6 +21,8 @@ from openkernelforge.harness.sandbox import (
     CandidateLoadError,
     LoadedCandidate,
     load_candidate_from_path,
+    resolve_task_artifact_dir,
+    unload_candidate,
     write_candidate_source,
 )
 from openkernelforge.harness.template_preservation import check_template_preservation
@@ -181,6 +183,7 @@ def _run_dummy_task(
     policy = check_candidate_policy(
         candidate_spec.source,
         allow_torch_fallback=config.agent.allow_torch_fallback,
+        require_triton=not config.agent.allow_torch_fallback,
     )
     if policy.passed:
         loaded, verification, error_chunks = _load_and_verify(
@@ -230,6 +233,8 @@ def _run_dummy_task(
         model=None,
         selected_best=True,
     )
+    if loaded is not None:
+        unload_candidate(loaded)
 
     return {
         "record_type": "task_summary",
@@ -272,6 +277,7 @@ def _run_template_task(
         policy = check_candidate_policy(
             candidate_spec.source,
             allow_torch_fallback=config.agent.allow_torch_fallback,
+            require_triton=not config.agent.allow_torch_fallback,
         )
         if policy.passed:
             loaded, verification, error_chunks = _load_and_verify(
@@ -354,6 +360,8 @@ def _run_template_task(
                 selected_best=False,
             )
         )
+        if loaded is not None:
+            unload_candidate(loaded)
 
     final_attempt = _select_best_attempt(attempts)
     _mark_selected_best(candidate_records, final_attempt)
@@ -476,6 +484,7 @@ def _run_llm_task(
                 policy = check_candidate_policy(
                     candidate_source,
                     allow_torch_fallback=config.agent.allow_torch_fallback,
+                    require_triton=not config.agent.allow_torch_fallback,
                 )
                 if policy.passed:
                     loaded, verification, error_chunks = _load_and_verify(
@@ -504,6 +513,7 @@ def _run_llm_task(
                 )
             )
             if should_benchmark:
+                assert loaded is not None
                 benchmarks, benchmark_errors = _benchmark_candidate(
                     task,
                     loaded,
@@ -556,6 +566,8 @@ def _run_llm_task(
                     "error_chunks": error_chunks,
                 }
             )
+            if loaded is not None:
+                unload_candidate(loaded)
             global_candidate_index += 1
 
         correct_entries = [
@@ -716,6 +728,7 @@ def _run_template_copy_task(
                 policy = check_candidate_policy(
                     candidate_source,
                     allow_torch_fallback=config.agent.allow_torch_fallback,
+                    require_triton=not config.agent.allow_torch_fallback,
                 )
                 if policy.passed:
                     preservation = check_template_preservation(
@@ -849,6 +862,8 @@ def _run_template_copy_task(
                     selected_best=False,
                 )
             )
+            if loaded is not None:
+                unload_candidate(loaded)
             global_candidate_index += 1
 
     final_attempt = _select_best_attempt(attempts)
@@ -972,6 +987,7 @@ def _run_performance_search(
                     policy = check_candidate_policy(
                         candidate_source,
                         allow_torch_fallback=config.agent.allow_torch_fallback,
+                        require_triton=not config.agent.allow_torch_fallback,
                     )
                     if policy.passed:
                         loaded, verification, error_chunks = _load_and_verify(
@@ -1045,6 +1061,8 @@ def _run_performance_search(
                     selected_best=False,
                 )
                 candidate_records.append(candidate_record)
+                if loaded is not None:
+                    unload_candidate(loaded)
                 if verification.passed and _attempt_quality_key(attempt) > _attempt_quality_key(best_attempt):
                     best_attempt = attempt
                     best_source = candidate_source
@@ -1103,6 +1121,8 @@ def _load_and_verify(
     error_chunks: list[str] = []
     try:
         loaded = load_candidate_from_path(candidate_path)
+        if loaded.forward is None:
+            raise CandidateLoadError(f"Candidate has no module-level forward: {candidate_path}")
         verification_shapes = _limited_shapes(task.benchmark_shapes, config.verification.max_shapes_per_task)
         verification = verify_candidate(
             task,
@@ -1156,6 +1176,8 @@ def _benchmark_candidate(
     benchmarks: list[Any] = []
     error_chunks: list[str] = []
     benchmark_shapes = _limited_shapes(task.benchmark_shapes, config.benchmark.max_shapes_per_task)
+    if loaded.forward is None:
+        raise CandidateLoadError(f"Candidate has no module-level forward: {loaded.path}")
     for shape in benchmark_shapes:
         benchmark = benchmark_task(
             task,
@@ -1430,12 +1452,11 @@ def _select_repair_entry(
     if not failed:
         if not allow_slow_correct_repair:
             return None
-        slow_correct = [
-            entry
-            for entry in entries
-            if _attempt_speedup_vs_eager(entry["attempt"]) is not None
-            and _attempt_speedup_vs_eager(entry["attempt"]) < 1.0
-        ]
+        slow_correct = []
+        for entry in entries:
+            speedup = _attempt_speedup_vs_eager(entry["attempt"])
+            if speedup is not None and speedup < 1.0:
+                slow_correct.append(entry)
         if slow_correct:
             return min(slow_correct, key=lambda entry: _attempt_speedup_vs_eager(entry["attempt"]) or 0.0)
         return None
@@ -1564,7 +1585,7 @@ def _best_template_context(task_id: str, config: RunConfig) -> dict[str, Any] | 
         )
     best = max(
         candidates,
-        key=lambda record: float((record.get("benchmark_summary") or {}).get("speedup_vs_eager")),
+        key=_record_speedup_vs_eager,
     )
     candidate_path = Path(str(best.get("candidate_path")))
     if not candidate_path.is_absolute():
@@ -1657,7 +1678,9 @@ def _write_text_artifact(
     suffix: str,
     text: str,
 ) -> Path:
-    artifact_dir = run_dir / group / task_id
+    if candidate_index < 0:
+        raise ValueError("candidate_index must be non-negative")
+    artifact_dir = resolve_task_artifact_dir(run_dir, group, task_id)
     artifact_dir.mkdir(parents=True, exist_ok=True)
     path = artifact_dir / f"candidate_{candidate_index:03d}{suffix}"
     path.write_text(text, encoding="utf-8")
@@ -1672,7 +1695,7 @@ def _write_error_log(
 ) -> str | None:
     if not error_chunks:
         return None
-    log_dir = run_dir / "logs" / task_id
+    log_dir = resolve_task_artifact_dir(run_dir, "logs", task_id)
     log_dir.mkdir(parents=True, exist_ok=True)
     error_log_path = log_dir / f"candidate_{candidate_index:03d}.err.txt"
     error_log_path.write_text("\n\n".join(error_chunks), encoding="utf-8")
@@ -1805,6 +1828,8 @@ def _write_environment_probe(run_dir: Path, environment: EnvironmentProbeResult)
 
 def _enforce_execution_requirements(config: RunConfig, environment: EnvironmentProbeResult) -> None:
     failures: list[str] = []
+    if config.execution.disabled_reason:
+        failures.append(f"config disabled: {config.execution.disabled_reason}")
     if config.execution.require_cuda and not environment.cuda_available:
         failures.append("execution.require_cuda=true but CUDA is unavailable")
     if config.execution.require_triton and not environment.triton_available:
@@ -1822,7 +1847,7 @@ def _enforce_execution_requirements(config: RunConfig, environment: EnvironmentP
 
 
 def _to_jsonable(value: Any) -> Any:
-    if dataclasses.is_dataclass(value):
+    if dataclasses.is_dataclass(value) and not isinstance(value, type):
         return _to_jsonable(dataclasses.asdict(value))
     if isinstance(value, dict):
         return {str(k): _to_jsonable(v) for k, v in value.items()}
@@ -1833,3 +1858,10 @@ def _to_jsonable(value: Any) -> Any:
     if isinstance(value, torch.dtype):
         return str(value).replace("torch.", "")
     return value
+
+
+def _record_speedup_vs_eager(record: dict[str, Any]) -> float:
+    value = (record.get("benchmark_summary") or {}).get("speedup_vs_eager")
+    if value is None:
+        raise ValueError("Candidate record has no eager speedup")
+    return float(value)

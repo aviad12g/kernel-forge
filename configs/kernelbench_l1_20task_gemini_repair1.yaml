@@ -1,0 +1,66 @@
+# HISTORICAL PROVENANCE ONLY. The parent run predates the corrected ModelNew
+# contract and ast-v5 policy. The runner intentionally rejects this taxonomy;
+# regenerate failure analysis from a corrected CUDA run before repair.
+tasks: []
+output_dir: runs
+kernelbench:
+  max_tasks: 8
+  candidate_provider: gemini_repair
+  candidates_per_task: 1
+  max_repair_candidates_per_task: 1
+  parent_run_dir: runs/20260520_202314
+  repair_taxonomy_path: runs/20260520_202314/kernelbench_failure_taxonomy.json
+  repair_task_ids:
+    - KernelBench__level1__10_3D_tensor_matrix_multiplication
+    - KernelBench__level1__13_Matmul_for_symmetric_matrices
+    - KernelBench__level1__14_Matmul_for_upper_triangular_matrices
+    - KernelBench__level1__15_Matmul_for_lower_triangular_matrices
+    - KernelBench__level1__16_Matmul_with_transposed_A
+    - KernelBench__level1__98_KLDivLoss
+    - KernelBench__level1__11_4D_tensor_matrix_multiplication
+    - KernelBench__level1__44_Average_Pooling_1D
+  stratify_by_family: true
+  record_skipped_tasks: true
+  max_numel_per_input: null
+  max_total_input_bytes: null
+  skip_if_estimated_memory_gt_mb: 3072
+agent:
+  type: llm
+  backend: openai_compatible
+  model: gemini-3.1-flash-lite
+  base_url: https://generativelanguage.googleapis.com/v1beta/openai/
+  api_key_env: GEMINI_API_KEY
+  max_attempts: 1
+  candidates_per_attempt: 1
+  stop_after_first_correct: false
+  benchmark_all_correct: true
+  allow_torch_fallback: false
+  temperature: 0.2
+  top_p: 0.95
+  max_tokens: 4096
+  timeout_seconds: 120
+  performance_search:
+    enabled: false
+benchmark:
+  enabled: true
+  timing_mode: cuda_event
+  warmup: 30
+  repeat: 120
+  independent_sessions: 3
+  device: auto
+  include_torch_compile: true
+  torch_compile_mode: max-autotune
+  cache_flush:
+    enabled: true
+    size_mb: 128
+    mode: write
+  bootstrap_ci:
+    enabled: true
+    samples: 1000
+    seed: 123
+  separate_compile_time: true
+execution:
+  disabled_reason: historical parent run uses the obsolete free-function contract; regenerate failure analysis from a corrected ast-v5 CUDA run
+  require_cuda: true
+  require_triton: true
+  require_tiny_triton_kernel: true

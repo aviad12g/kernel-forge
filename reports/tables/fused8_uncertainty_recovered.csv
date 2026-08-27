@@ -1,0 +1,4 @@
+source,run_id,verified,artifact_path,repeat_medians,p25_p75_iqr,bootstrap_ci,std_cv,per_session_medians,per_candidate_flip_pairs,notes
+template,20260520_155839,160/160,missing,yes,not preserved,not preserved,not preserved,not preserved,not preserved,full run directory is missing locally and under artifacts/runpod_imports
+Gemini,20260520_163344,23/24,missing,yes,not preserved,not preserved,partially preserved,not preserved,not preserved,full run directory is missing locally and under artifacts/runpod_imports
+OpenAI mini,20260520_163607,12/24,missing,yes,not preserved,not preserved,partially preserved,not preserved,not preserved,full run directory is missing locally and under artifacts/runpod_imports

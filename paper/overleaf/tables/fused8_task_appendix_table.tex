@@ -1,0 +1,20 @@
+\begin{table}[htbp]
+\centering
+\caption{Fused8 task-level repeatability summary. Imported fused8 summaries preserve medians and labels, but not all interval statistics.}
+\label{tab:fused8-task-appendix}
+\scriptsize
+\begin{tabularx}{\linewidth}{l l l r l X}
+\toprule
+Task & Winner & Source & Repeat median & Uncertainty & Interpretation \\
+\midrule
+bias\_relu & none & n/a & 0.976x & not preserved & single-run template win fell below eager \\
+sigmoid & none & n/a & 0.997x & std 0.029, CV 0.030 & nearest model remained below eager \\
+add\_relu & none & n/a & 0.968x & std 0.003, CV 0.003 & nearest model remained below eager \\
+residual & OpenAI mini & llm & 1.074x & std 0.048, CV 0.045 & OpenAI mini is the only model-over-template stable win \\
+bias\_gelu & template & template & 1.485x & not preserved & template remains stronger than Gemini \\
+row\_sum & none & n/a & 0.674x & not preserved & all verified candidates below eager \\
+layernorm & none & n/a & 0.791x & not preserved & all verified candidates below eager \\
+rmsnorm & template & template & 1.452x & not preserved & template remains strongest by repeat median \\
+\bottomrule
+\end{tabularx}
+\end{table}

@@ -1,0 +1,39 @@
+tasks: []
+output_dir: runs/corrected_kernelbench
+kernelbench:
+  max_tasks: 20
+  candidate_provider: none
+  stratify_by_family: true
+  record_skipped_tasks: true
+  max_numel_per_input: null
+  max_total_input_bytes: null
+  skip_if_estimated_memory_gt_mb: 3072
+  allow_cpu_memory_preflight_fallback: false
+agent:
+  type: template
+  backend: fake
+  benchmark_all_correct: true
+  allow_torch_fallback: false
+benchmark:
+  enabled: true
+  timing_mode: cuda_event
+  warmup: 30
+  repeat: 120
+  independent_sessions: 3
+  stable_session_threshold: 0.98
+  device: auto
+  include_torch_compile: true
+  torch_compile_mode: max-autotune
+  cache_flush:
+    enabled: true
+    size_mb: 128
+    mode: write
+  bootstrap_ci:
+    enabled: true
+    samples: 1000
+    seed: 123
+  separate_compile_time: true
+execution:
+  require_cuda: true
+  require_triton: true
+  require_tiny_triton_kernel: true

@@ -1,0 +1,15 @@
+\begin{table}[htbp]
+\centering
+\caption{Historical loss-candidate source notes. The affected reference lifecycle prevents causal or performance attribution from these rows.}
+\label{tab:kernelbench-loss-interpretation}
+\scriptsize
+\begin{tabularx}{\linewidth}{l r r X X}
+\toprule
+Task & Eager & Compile & Likely mechanism & Caveat \\
+\midrule
+CE & 1.992x & 2.895x & source contains row-wise log-sum-exp and target gather followed by a Torch mean & historical source pattern only; invalid reference lifecycle prevents performance attribution \\
+Triplet & 4.176x & 3.208x & source contains one Triton kernel for distances and hinge loss followed by a Torch mean & historical source pattern only; invalid reference lifecycle prevents performance attribution \\
+KLDiv & 1.843x & 1.028x & source contains a Triton elementwise KL term plus Torch log and reduction & historical source pattern only; invalid reference lifecycle prevents performance attribution; candidate still uses torch.log and torch sum outside Triton \\
+\bottomrule
+\end{tabularx}
+\end{table}

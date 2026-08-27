@@ -25,7 +25,7 @@ def export_dataset(run_dir: str | Path, out_dir: str | Path) -> Path:
     bundle = load_run_bundle(run_path)
     candidates = bundle["candidate_records"]
     classifications = {id(record): classify_candidate_record(record) for record in candidates}
-    rows = {filename: [] for filename in DATASET_FILES}
+    rows: dict[str, list[dict[str, Any]]] = {filename: [] for filename in DATASET_FILES}
     skipped_variant_rows = _skipped_variant_rows(run_path)
 
     for record in candidates:
@@ -361,15 +361,15 @@ def _optimization_rows(run_path: Path, candidates: list[dict[str, Any]]) -> list
             continue
         sorted_correct = sorted(
             correct,
-            key=lambda r: float((r.get("benchmark_summary") or {}).get("candidate_median_ms")),
+            key=_candidate_median_ms,
         )
         fastest = sorted_correct[0]
         for slower in sorted_correct[1:]:
             pair_key = (slower.get("candidate_path"), fastest.get("candidate_path"))
             if pair_key in seen_pairs:
                 continue
-            fast_ms = float((fastest.get("benchmark_summary") or {}).get("candidate_median_ms"))
-            slow_ms = float((slower.get("benchmark_summary") or {}).get("candidate_median_ms"))
+            fast_ms = _candidate_median_ms(fastest)
+            slow_ms = _candidate_median_ms(slower)
             if slow_ms <= fast_ms * 1.05:
                 continue
             classification = classify_candidate_record(slower)
@@ -395,6 +395,13 @@ def _optimization_rows(run_path: Path, candidates: list[dict[str, Any]]) -> list
             )
             rows.append(base)
     return rows
+
+
+def _candidate_median_ms(record: dict[str, Any]) -> float:
+    value = (record.get("benchmark_summary") or {}).get("candidate_median_ms")
+    if value is None:
+        raise ValueError("Candidate record has no median runtime")
+    return float(value)
 
 
 def _write_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:

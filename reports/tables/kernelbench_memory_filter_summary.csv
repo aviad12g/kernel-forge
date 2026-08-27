@@ -1,0 +1,20 @@
+category,family,count,shape_examples,interpretation,evidence_status
+overall,all,100,not applicable,historical adapter loaded official L1 pool,historical_adapter_output_only
+selected_feasible,all,20,see selected task appendix,historical subset after lower-bound filter,historical_adapter_output_only
+skipped_memory_cap,all,31,"[4096,393216]; [4096,393216]",historical lower-bound filter skip encountered before selection cap,historical_adapter_output_only
+selected_feasible,activation,0,not available,historical selected family count,historical_adapter_output_only
+skipped_memory_cap,activation,7,"[4096,393216]; [4096,393216]",historical filter count,historical_adapter_output_only
+selected_feasible,convolution,7,"[256,3,224,224]; [16,3,64,64,64]",historical selected family count,historical_adapter_output_only
+skipped_memory_cap,convolution,0,not available,historical filter count,historical_adapter_output_only
+selected_feasible,kernelbench_l1,0,not available,historical selected family count,historical_adapter_output_only
+skipped_memory_cap,kernelbench_l1,6,"[4096,393216]; [4096,393216]",historical filter count,historical_adapter_output_only
+selected_feasible,loss,3,"[32768,4096]; [16384,16384]",historical selected family count,historical_adapter_output_only
+skipped_memory_cap,loss,3,"[32768,32768]; [32768,32768]",historical filter count,historical_adapter_output_only
+selected_feasible,matmul,7,"[16,1024,2048]; [8,256,512,256]",historical selected family count,historical_adapter_output_only
+skipped_memory_cap,matmul,0,not available,historical filter count,historical_adapter_output_only
+selected_feasible,normalization,0,not available,historical selected family count,historical_adapter_output_only
+skipped_memory_cap,normalization,6,"[64,64,512,512]; [112,64,512,512]",historical filter count,historical_adapter_output_only
+selected_feasible,pooling,3,"[64,192,65536]; [32,64,512,512]",historical selected family count,historical_adapter_output_only
+skipped_memory_cap,pooling,3,"[16,32,128,128,128]; [16,64,2048,2048]",historical filter count,historical_adapter_output_only
+selected_feasible,reduction,0,not available,historical selected family count,historical_adapter_output_only
+skipped_memory_cap,reduction,6,"[128,4096,4095]; [128,4096,4095]",historical filter count,historical_adapter_output_only

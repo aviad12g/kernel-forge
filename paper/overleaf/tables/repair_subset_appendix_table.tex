@@ -1,0 +1,20 @@
+\begin{table}[htbp]
+\centering
+\caption{Repair outcomes recorded by the affected historical evaluator. The rows characterize its failure workflow and are not corrected-adapter results.}
+\label{tab:repair-subset-appendix}
+\scriptsize
+\begin{tabularx}{\linewidth}{l l l X}
+\toprule
+Task & Original failure & Repairability & Repair result \\
+\midrule
+matmul\_3d & numeric & high & failed \\
+matmul\_symmetric & numeric & high & failed \\
+matmul\_upper\_tri & numeric & high & failed \\
+matmul\_lower\_tri & numeric & high & failed \\
+matmul\_transposed\_A & numeric & high & failed \\
+kldiv & numeric & high & stable, 1.843x \\
+matmul\_4d & Triton compile & high & failed \\
+avgpool1d & Triton compile & high & failed \\
+\bottomrule
+\end{tabularx}
+\end{table}

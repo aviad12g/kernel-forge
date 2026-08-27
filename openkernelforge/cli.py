@@ -215,6 +215,9 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "check-backend":
         config = load_config(args.config)
+        if config.execution.disabled_reason:
+            print(f"Backend check blocked: {config.execution.disabled_reason}")
+            return 1
         try:
             backend = create_backend(config.agent)
             generate_kwargs = {}
@@ -411,7 +414,7 @@ def main(argv: list[str] | None = None) -> int:
         json_path = Path(report_path).parent / "kernelbench_l1_check.json"
         if json_path.exists():
             status = json.loads(json_path.read_text(encoding="utf-8")).get("status")
-            return 0 if status in {"completed", "completed_with_failures"} else 1
+            return 0 if status == "completed" else 1
         return 0
 
     parser.error(f"Unknown command: {args.command}")

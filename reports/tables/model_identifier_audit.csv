@@ -1,0 +1,6 @@
+source,configured_model_string,response_model_field,backend,run_date,artifact_source,verification_status
+fused8 template,not applicable,not applicable,fake/template,2026-05-20,configs/template_fused8_gpu_benchmark_rigorous.yaml and summarized run 20260520_155839,160/160 verified
+fused8 Gemini,gemini-3.1-flash-lite,not preserved,openai_compatible Gemini endpoint,2026-05-20,configs/gemini_fused8_gpu_baseline_rigorous.yaml and summarized run 20260520_163344,23/24 verified
+fused8 OpenAI mini,gpt-5.4-mini,not preserved,openai_compatible OpenAI chat completions,2026-05-20,configs/openai_mini_fused8_gpu_baseline_rigorous.yaml and summarized run 20260520_163607,12/24 verified
+KernelBench one-shot Gemini,gemini-3.1-flash-lite,not preserved; result records preserve configured model field,openai_compatible Gemini endpoint,2026-05-20,artifacts/runpod_imports/runs/20260520_202314/config.yaml and results.jsonl,historical evaluator recorded 3/20; invalid as correctness evidence
+KernelBench repair Gemini,gemini-3.1-flash-lite,not preserved; result records preserve configured model field,openai_compatible Gemini endpoint,2026-05-20,artifacts/runpod_imports/runs/20260520_213128/config.yaml and results.jsonl,historical evaluator recorded 1/8; invalid as repair evidence

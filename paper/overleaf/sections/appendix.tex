@@ -1,0 +1,112 @@
+\section{Supplementary Material}
+
+This appendix keeps task-level details out of the main body. Raw prompts, responses, candidate files, verification traces, and benchmark samples remain in the run artifacts.
+
+\subsection{Example generated candidates}
+
+The examples below are abridged excerpts from the historical KernelBench run. They make the adapter and verifier audit concrete; they are not corrected-adapter results.
+
+\paragraph{Historically accepted one-shot candidate: CrossEntropyLoss.}
+The historical one-shot Gemini candidate for \code{CE} passed the original policy and correctness checks and was labeled \code{REPEAT\_STABLE\_WIN}. Its recorded speedups are retained in the raw artifact but are provisional because the reference lifecycle was defective. Static inspection shows a row-wise log-sum-exp pattern followed by target-logit gather and a Torch mean reduction. The current \code{ast-v5} policy rejects that high-level reduction when fallback is disabled. The preserved source is under \path{artifacts/runpod_imports/runs/20260520_202314/candidates/.../candidate_000.py}.
+
+{\scriptsize
+\begin{verbatim}
+@triton.jit
+def _cross_entropy_kernel(logits_ptr, targets_ptr, loss_ptr,
+                          n_rows, n_cols, BLOCK_SIZE: tl.constexpr):
+    row_idx = tl.program_id(0)
+    ...
+    log_sum_exp = max_val + tl.log(sum_exp)
+    target = tl.load(targets_ptr + row_idx)
+    target_logit = tl.load(logits_ptr + row_idx * n_cols + target)
+    tl.store(loss_ptr + row_idx, log_sum_exp - target_logit)
+
+def forward(predictions, targets):
+    n_rows, n_cols = predictions.shape
+    loss = torch.empty(n_rows, device=predictions.device,
+                       dtype=predictions.dtype)
+    _cross_entropy_kernel[(n_rows,)](...)
+    return loss.mean()
+\end{verbatim}
+}
+
+\paragraph{Failed one-shot candidate: 4D tensor matmul.}
+The historical \code{matmul\_4d} candidate passed static policy but failed verification before timing with a Triton compilation error. It attempts a blocked matmul over a flattened 4D tensor, but pointer and mask ranks do not match. The verifier records \code{triton.compiler.errors.CompilationError} with summary \code{Cannot broadcast, rank mismatch: ['1','1','32'], ['16','1','1','32']}. The failure was labeled high repairability because it is localized to pointer arithmetic and mask shape; the single repair attempt did not verify.
+
+{\scriptsize
+\begin{verbatim}
+A_ptr_base = A_ptr + (rm[:, None, None, None] // (256 * 512)) * stride_ab + ...
+acc = tl.zeros((BLOCK_M, BLOCK_N), dtype=tl.float32)
+for k in range(0, K, BLOCK_K):
+    a = tl.load(
+        A_ptr_base + (rk[None, None, :] + k) * stride_al,
+        mask=rk[None, None, :] + k < K,
+        other=0.0,
+    )
+    b = tl.load(B_ptr + (rk[:, None] + k) * stride_bk + rn[None, :], ...)
+    acc += tl.dot(a.reshape(BLOCK_M, BLOCK_K), b)
+\end{verbatim}
+}
+
+\begin{table}[htbp]
+\centering
+\caption{Verifier-error example. The failure taxonomy records both the concrete exception and the repairability decision.}
+\label{tab:verifier-error-example}
+\scriptsize
+\begin{tabularx}{\linewidth}{l l l X}
+\toprule
+Task & Category & Repairability & Verifier summary \\
+\midrule
+matmul\_4d & Triton compile & high & \code{tl.load} mask and pointer ranks do not broadcast; selected for repair because the failure is localized to pointer arithmetic and constexpr mask shape. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Historical KernelBench diagnostic figures}
+
+Figures~\ref{fig:kernelbench-funnel} and~\ref{fig:kernelbench-failures} summarize the affected run's output funnel and recorded failure taxonomy. They are retained to document the evaluator audit, not to support corrected-adapter performance claims.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.86\linewidth]{kernelbench_pilot_funnel.pdf}
+\caption{Output funnel from the affected historical adapter. Counts describe preserved artifacts, not corrected-adapter model accuracy.}
+\label{fig:kernelbench-funnel}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.62\linewidth]{kernelbench_failure_taxonomy.pdf}
+\caption{Failure categories recorded by the historical verifier. Contract-invalid parameterized candidates make this a diagnostic taxonomy rather than a model-capability estimate.}
+\label{fig:kernelbench-failures}
+\end{figure}
+
+\FloatBarrier
+
+\subsection{Fused8 task and uncertainty details}
+
+\input{tables/fused8_shapes_tolerances_table}
+\input{tables/fused8_task_appendix_table}
+\input{tables/fused8_uncertainty_recovered_table}
+\input{tables/fused8_eager_baseline_notes_table}
+\input{tables/statistical_summary_table}
+
+\FloatBarrier
+
+\subsection{Historical KernelBench audit details}
+
+\input{tables/kernelbench_family_summary_table}
+\input{tables/kernelbench_memory_filter_summary_table}
+\input{tables/kernelbench_repairability_criteria_table}
+\input{tables/compile_time_summary_table}
+\input{tables/kernelbench_task_appendix_table}
+\input{tables/kernelbench_candidate_appendix_table}
+\input{tables/repair_subset_appendix_table}
+
+\FloatBarrier
+
+\subsection{Positioning summary}
+
+\input{tables/positioning_table}
+
+\FloatBarrier
+\input{sections/prompt_appendix}

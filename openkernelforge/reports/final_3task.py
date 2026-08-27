@@ -72,13 +72,19 @@ def format_final_3task_report(runs: dict[str, dict[str, Any]]) -> str:
         ]
     )
     for task_id in tasks:
-        best_label = None
-        best_record = None
+        best_label: str | None = None
+        best_record: dict[str, Any] | None = None
         for label, task_best in best_by_run.items():
             record = task_best.get(task_id)
             if not record:
                 continue
-            if best_record is None or _metric(record, "speedup_vs_eager") > _metric(best_record, "speedup_vs_eager"):
+            record_speedup = _metric(record, "speedup_vs_eager")
+            best_speedup: float | None = (
+                _metric(best_record, "speedup_vs_eager") if best_record else None
+            )
+            if record_speedup is not None and (
+                best_speedup is None or record_speedup > best_speedup
+            ):
                 best_label = label
                 best_record = record
         benchmark = (best_record or {}).get("benchmark_summary") or {}
@@ -135,7 +141,8 @@ def _best_by_task(records: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
         if speedup is None:
             continue
         task_id = str(record.get("task_id"))
-        if task_id not in best or speedup > _metric(best[task_id], "speedup_vs_eager"):
+        current = _metric(best[task_id], "speedup_vs_eager") if task_id in best else None
+        if current is None or speedup > current:
             best[task_id] = record
     return best
 

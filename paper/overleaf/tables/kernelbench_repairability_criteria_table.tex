@@ -1,0 +1,15 @@
+\begin{table}[htbp]
+\centering
+\caption{Repairability categories used by the affected historical evaluator. They document selection provenance but do not validate the resulting repair rows.}
+\label{tab:kernelbench-repairability}
+\scriptsize
+\begin{tabularx}{\linewidth}{l X r r X}
+\toprule
+Label & Operational criterion & Selected & Observed & Notes \\
+\midrule
+high & wrong signature/input count, shape mismatch, Triton compile error, or numerical mismatch in matmul/loss tasks & 8 & 8 & historical selection provenance; not repair-effectiveness evidence \\
+medium & runtime exception or other category not explicitly high/low & 0 & 0 & historical analyzer category; absent from the initial taxonomy summary \\
+low & convolution numerical mismatch, timeout/OOM, verification harness issue, unsupported pattern, or invalid forward state & 0 & 9 & historical selection provenance only \\
+\bottomrule
+\end{tabularx}
+\end{table}

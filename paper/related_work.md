@@ -1,21 +1,35 @@
 # Related Work
 
-## LLM-Generated GPU Kernels
+## Positioning
 
-Kernel-generation agents use language models to propose CUDA or Triton implementations for PyTorch workloads. The promising part is that models can often map high-level tensor programs into executable low-level kernels. The hard part is proving that the generated code is both correct and actually faster under fair measurement.
+OpenKernelForge sits between generated-kernel benchmarks, compiler baselines,
+and systems-measurement methodology. KernelBench and CUDA-L1 focus on generated
+kernel capability and improvement; Triton, Halide, TVM, and TorchInductor
+provide compiler and DSL context; systems-measurement work motivates the
+statistical caution. OpenKernelForge combines these threads as a
+repeatability-aware evaluation and artifact-preservation layer. A compact
+positioning table is kept in the appendix rather than the main body.
 
-## KernelBench-Style Evaluation
+## LLM-Generated GPU Kernels And Kernel Agents
 
-KernelBench evaluates generated kernels for PyTorch workloads using correctness and performance metrics. It is the natural benchmark target for this project, but OpenKernelForge has not yet run a KernelBench result. The current internal fused8 benchmark is a smaller controlled environment for developing measurement and artifact discipline before moving to KernelBench L1.
+LLM-based kernel-generation systems attempt to translate tensor programs into CUDA or Triton implementations that compile, pass correctness tests, and improve runtime. KernelBench frames this as an evaluation problem: generated kernels must be judged by correctness and measured performance, not source plausibility [@kernelbench2025]. CUDA-L1 studies feedback-driven CUDA optimization as a model-improvement direction [@cudallm2025]. OpenKernelForge is different in scope. It is not a new model, training method, or leaderboard entry. It provides evaluation infrastructure for deciding which generated-kernel speedups are supported by preserved artifacts and repeatability-aware measurement.
 
-## Triton Template Baselines
+## KernelBench And Generated-Kernel Benchmarks
 
-Triton makes concise GPU kernels easier to write, especially for elementwise fusion and small reductions. Deterministic templates are an important baseline because they show whether a model-generated candidate is better than a straightforward hand-structured implementation. In the current fused8 study, templates remain the strongest overall performance floor.
+KernelBench asks whether LLMs can write efficient GPU kernels across a broader suite of tasks [@kernelbench2025]. KernelBench-Verified subsequently shows that baseline configuration and narrow correctness distributions can overstate generated-kernel performance [@zhang2026kernelbenchverified]. Its hidden-test and TF32 analyses complement the present focus on task-state contracts, lifecycle isolation, repeatability, and artifact provenance. The present work does not report a validated KernelBench score. It uses preserved artifacts from a capped historical pilot to audit policy checks and evaluator behavior. The audit motivates the corrected `ModelNew` adapter and illustrates why evaluator validity must be established before model capability is inferred.
 
-## Repeatability And Benchmark Variance
+## Triton And GPU Program Synthesis
 
-GPU runtime measurements can vary due to thermal state, clocking, cache effects, compilation, memory layout, and scheduler noise. A single successful timing run is not enough evidence for a speedup claim. OpenKernelForge treats repeatability as part of the benchmark result: top candidates should be remeasured across independent sessions before being called stable wins.
+Triton provides a Python-embedded language and compiler for tiled neural-network kernels [@tillet2019triton]. It is a practical target for generated code because it exposes GPU programming concepts while remaining close to Python. OpenKernelForge also draws on a longer line of tensor and image-computation DSLs. Halide separates algorithm from schedule for image pipelines [@ragankelley2013halide], and TVM provides an optimizing compiler stack for deep-learning operators [@chen2018tvm]. OpenKernelForge does not propose a new compiler; it evaluates generated Triton programs against references, templates, and compiler baselines.
 
-## Dataset Curation For Future Training
+## Compiler Baselines
 
-Generated-kernel logs can become training data, but only after review. Correct-but-slow candidates, failed-to-fixed repairs, template-vs-model optimization pairs, and repeat-stable fast candidates have different uses. OpenKernelForge preserves these distinctions so future SFT or optimization training does not mix unstable single-run wins with trusted targets.
+Generated kernels should be compared with compiler-produced code, not only eager PyTorch. PyTorch 2 introduced dynamic bytecode transformation and graph compilation exposed through `torch.compile` [@ansel2024pytorch2]. OpenKernelForge reports both speedup vs eager and speedup vs `torch.compile max-autotune` where available. Compile time is separated from runtime so that steady-state kernel claims are not inflated or penalized by compilation overhead.
+
+## Measurement Reliability In GPU Benchmarking
+
+Systems work has long shown that small timing and layout choices can change conclusions. Mytkowicz et al. show that measurement bias can produce wrong data without an obvious methodological error [@mytkowicz2009wrongdata]. Stabilizer argues for statistically sound performance evaluation under architectural nondeterminism [@curtsinger2013stabilizer]. Touati discusses statistical methodology for program-speedup claims [@touati2009statistical]. GPU timing adds warmup, launch overhead, cache state, memory allocation, synchronization, and compilation. CUDA events provide GPU-side elapsed-time measurement and are the timing primitive used by the rigorous OpenKernelForge path [@nvidiaCudaEvents]. The novelty is not CUDA timing itself. It is integrating repeatability labels, artifact preservation, static policy checks, and generated-kernel verification into one evaluation layer.
+
+## Repair And Feedback Loops
+
+Generated code often improves through feedback: verifier errors, compiler diagnostics, and runtime traces can become repair context. Self-refinement work studies iterative feedback loops for improving generated outputs [@madaan2023selfrefine]. The preserved OpenKernelForge repair pass is narrower: it provides one verifier error and the previous candidate once. Because that run used the affected KernelBench adapter, it is retained as workflow provenance rather than evidence of repair effectiveness.

@@ -196,7 +196,7 @@ def _record_notes(record: dict[str, Any]) -> str:
 
 
 def _failure_groups(candidate_records: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
-    groups = {
+    groups: dict[str, list[dict[str, Any]]] = {
         "policy rejection": [],
         "extraction failure": [],
         "compile/runtime error": [],

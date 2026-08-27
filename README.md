@@ -1,28 +1,28 @@
 # OpenKernelForge
 
-OpenKernelForge is an open research harness for evaluating LLM-generated Triton kernels with correctness verification, repeatability-aware benchmarking, deterministic template baselines, and inspectable run artifacts.
+OpenKernelForge is an evaluation harness for generated Triton-kernel claims, not a kernel-generation leaderboard. It combines contract-aware correctness checks, paired CUDA-event timing, independent confirmation, evaluator controls, compiler baselines, and checksummed artifacts. The formal four-page workshop paper, *Auditing LLM-Generated GPU Kernel Claims with Contract-Aware Holdout Re-Evaluation*, is available at [`paper/workshop2026/openkernelforge_workshop2026.pdf`](paper/workshop2026/openkernelforge_workshop2026.pdf). The longer historical audit report remains at [`paper/openkernelforge_paper.pdf`](paper/openkernelforge_paper.pdf).
 
 The current thesis is deliberately narrow:
 
-> Single-run speedups from LLM-generated GPU kernels are not reliable enough. Repeatability-aware CUDA benchmarking changes conclusions and prevents false wins.
+> Repeatability-aware CUDA-event benchmarking changes which Triton kernel speedups should be considered stable and provides a useful default evaluation layer for LLM-generated GPU kernels.
 
 This repository is not a KernelBench submission, not a trained model release, and not a SOTA claim.
 
 ## What This Project Is
 
-OpenKernelForge provides the infrastructure needed to study generated GPU kernels without relying on one-off timing results:
+OpenKernelForge provides the infrastructure needed to study generated GPU kernels without relying on one-off timing results. Its main contribution is a methodology and artifact discipline for evaluating generated-kernel speed claims:
 
 - task definitions with PyTorch references and deterministic input generation
-- candidate extraction, static policy checks, and sandboxed loading
+- candidate extraction, conservative AST policy checks, and trusted in-process loading
 - correctness verification before benchmarking
 - PyTorch eager and optional `torch.compile` comparisons
 - candidate-level JSONL logging with prompts, responses, source, errors, and benchmark summaries
 - deterministic Triton template baselines
 - repeatability reports for top candidates
-- curated dataset export for later manual review and training research
+- curated dataset export for later manual review
 - technical reports and artifact-preservation tooling
 
-The repo currently focuses on an internal fused8 benchmark. KernelBench L1 support is planned as a repeatability study, but has not been run yet.
+The completed workshop campaign uses the corrected official `ModelNew` lifecycle on a performance-blind 48-task KernelBench L1 subset. Of 141 evaluated candidate records, 27 passed the full policy, contract, correctness, runtime, and timing gate, covering 10 tasks. None of the 10 frozen task winners exceeded eager by the prespecified 2% margin in screening or seven-process confirmation. An easy deterministic fused8 grid found no multiplicity-driven false promotion on either the original T4 or a same-GPU RTX A4500 replication. A separate calibrated near-threshold stress test produced three apparent wins and two confirmed wins at `K=8`; `bias_gelu` fell from 1.0271x to 1.0001x. The four-task interval includes zero, so this is a bounded mechanism demonstration rather than a population estimate. One frozen winner was also confirmed at 2.001x versus `torch.compile max-autotune` across seven fresh A4500 processes while remaining below eager. Historical KernelBench pilot rows from the invalid adapter are retained only as an evaluator-audit case study and are not merged with the corrected results.
 
 ## Why Repeatability Matters
 
@@ -34,14 +34,14 @@ GPU kernel timing is noisy. In this project, some single-run wins disappeared wh
 - template-guided prompting produced useful optimization data but did not automatically improve performance
 - repeat-stable wins were much rarer and more informative than single-run wins
 
-The goal is to make these distinctions explicit before claiming an generated kernel is faster.
+The goal is to make these distinctions explicit before claiming a generated kernel is faster.
 
 ## System Overview
 
 ```text
-task metadata
+task metadata and initialized state
   -> prompt or deterministic template generator
-  -> candidate Python source exposing forward(*args)
+  -> candidate Python source exposing forward(*args) or KernelBench ModelNew
   -> static policy check
   -> correctness verifier
   -> benchmarker
@@ -51,20 +51,54 @@ task metadata
 
 Supported agent paths include deterministic templates, a fake backend for tests, OpenAI-compatible model servers, and local vLLM-style servers. Tests do not require CUDA, internet, API keys, or a live model server.
 
+Formal methodology definitions are in [`docs/methodology/`](docs/methodology/). They specify repeatability labels, static policy checks, timing/cache-state perturbation, prompt settings, fused8 shapes/tolerances, environment fields, configured model identifiers, and the corrected KernelBench `ModelNew` state contract. The docs distinguish imported fused8 legacy labels from the current rigorous session labeler and explain why the historical KernelBench labels remain audit artifacts rather than supported results.
+
+Existing-result statistical notes are generated by [`scripts/analyze_existing_results_statistics.py`](scripts/analyze_existing_results_statistics.py) and [`scripts/analyze_kernelbench_interpretation.py`](scripts/analyze_kernelbench_interpretation.py). These scripts compute descriptive Wilson verification-rate intervals, KernelBench family summaries, memory-filter summaries, repairability criteria, static loss-win interpretations, qualitative eager-baseline notes, compile-time availability, fused8 artifact-recovery status, and preserved single-run/repeat flip evidence without running new experiments. They do not perform a candidate-level model significance test because candidates are clustered within tasks.
+
 ## Current Internal Fused8 Results
 
-These are internal fused8 results, not KernelBench.
+These are rigorous internal fused8 results, not KernelBench. Timing uses CUDA events, cache flushing, three independent sessions, bootstrap summaries, and `torch.compile max-autotune`.
 
-| Baseline | Candidates | Verified | Median speedup vs eager | Repeat-stable wins | Interpretation |
-| --- | ---: | --- | ---: | --- | --- |
-| deterministic templates | 2076 | 2076/2076 | 0.862x | `residual_add_relu`, `bias_gelu`, `rmsnorm_small` | strongest overall floor |
-| Gemini baseline | 28 | 28/28 | 0.933x | competitive, not dominant | correct fused kernels reliably |
-| Gemini template-guided | 34 | 34/34 | 0.798x | `residual_add_relu` | useful optimization data, worse median |
-| OpenAI mini cheap | 8 | 8/8 | 0.882x | `residual_add_relu`, `bias_gelu`, `rmsnorm_small` | cheap and competitive |
-| GPT-5.5 cheap | 8 | 8/8 | 0.927x | `bias_gelu`, `rmsnorm_small` | not clearly better under cheap protocol |
-| Qwen 7B local | 8 | 1/8 effective | 0.002x | none | weak zero-shot |
+The fused8 suite uses one primary shape regime centered on `[4096, 1024]`; these results characterize that controlled regime and are not evidence about shape scaling.
 
-Qwen 14B was not evaluated because the vLLM pod ran out of disk/cache during model download. That is not a model-quality result.
+| Baseline | Candidates | Verified | Median speedup vs eager | Median speedup vs compile | Repeat-stable wins | Interpretation |
+| --- | ---: | --- | ---: | ---: | --- | --- |
+| template | 160 | 160/160 | 0.945x | 1.079x | `residual`, `bias_gelu`, `rmsnorm` | strongest overall floor |
+| Gemini | 24 | 23/24 | 0.923x | 1.863x | `bias_gelu`, `rmsnorm` | strongest model correctness |
+| OpenAI mini | 24 | 12/24 | 0.888x | 1.835x | `residual` | weaker correctness, one stable win over template |
+
+Legacy Gemini/OpenAI/GPT-5.5/Qwen rows are retained in reports as historical context only; they are no longer the primary paper-facing comparison. Qwen 14B was not evaluated because the vLLM pod ran out of disk/cache during model download. That is not a model-quality result.
+
+One notable characterization result is that Gemini and OpenAI mini are strong against `torch.compile max-autotune` on fused8, but remain below eager at median. The paper treats this as evidence that generated Triton kernels may replace weak compiler-generated paths without being universal replacements for library-specialized eager kernels.
+
+## Historical KernelBench Adapter Audit
+
+The official KernelBench repository was cloned at `/workspace/KernelBench` on RunPod:
+
+- Repo: `https://github.com/ScalingIntelligence/KernelBench`
+- Commit: `423217d9fda91e0c2d67e4a43bf62f96f6d104f1`
+- OpenKernelForge run: `/workspace/openkernelforge/runs/20260520_202314`
+- Repair run: `/workspace/openkernelforge/runs/20260520_213128`
+- Scope: capped feasible-subset pilot, Gemini only, one capped repair iteration, no template guidance, no performance search
+- Stratified task pool loaded: 100
+- Feasible tasks selected for timing: 20
+- Oversized tasks encountered and skipped before timing: 31 in the scanned prefix
+- Selection rule: first 20 feasible tasks in deterministic family-round-robin order; the remaining loaded pool was not scanned after the cap
+- Family coverage: convolution 7, matmul 7, pooling 3, loss 3
+- Eager timed successfully: 20/20 selected
+- torch.compile medians recorded: 20/20 selected
+- Benchmark failures: 0
+- Gemini candidates generated: 20
+- Policy pass/fail: 20/0
+- Verification pass/fail: 3/17
+- Benchmarked generated candidates: 3
+- Historically recorded repeat-stable labels: CrossEntropyLoss, TripletMarginLoss
+- Repair attempted/verified: 8/1
+- Historically recorded repair label: KLDivLoss
+- Historically recorded combined correct count: 4
+- Historically recorded combined stable-label count: 3
+
+These counts describe what the old evaluator recorded; they are not current estimates of Gemini correctness or KernelBench speed. The old prompt gave candidates only `get_inputs()` through a free `forward(*args)`, which violated the official contract for all `Model` tasks and prevented parameterized tasks from owning the state created by `get_init_inputs()`. The reference path also reconstructed and transferred `Model` inside each timed call. The corrected campaign uses one seeded initialization snapshot, persistent reference `Model` and candidate `ModelNew` instances outside timed regions, strict free-function rejection for official tasks, paired method-order randomization, and fresh-process confirmation. Its results are reported separately in [`reports/workshop2026_corrected_results.md`](reports/workshop2026_corrected_results.md).
 
 ## Install
 
@@ -75,7 +109,13 @@ python -m pip install -e .
 For development:
 
 ```bash
-python -m pip install -r requirements.txt
+python -m pip install -e '.[dev]'
+```
+
+For paper assets and PDF checks:
+
+```bash
+python -m pip install -e '.[paper]'
 ```
 
 ## Run Tests
@@ -85,6 +125,125 @@ pytest -q
 ```
 
 The test suite is intended to pass on CPU-only machines.
+
+## Build The Paper
+
+The Overleaf-ready paper source lives under [`paper/overleaf/`](paper/overleaf/). To upload it to Overleaf, zip that directory, upload the archive, and compile `main.tex` with the default `pdflatex` or `latexmk` flow. The project includes section files, `references.bib`, generated table `.tex` files, and PNG/PDF figures.
+See [`paper/overleaf/OVERLEAF_README.md`](paper/overleaf/OVERLEAF_README.md) for the self-contained Overleaf package instructions. The appendix includes concise examples of one historically accepted KernelBench candidate and one verifier failure, both drawn from imported audit artifacts.
+
+Regenerate local paper assets from the checked-in CSV tables:
+
+```bash
+python scripts/make_paper_figures.py
+python scripts/build_paper_assets.py
+python scripts/check_pdf_text_clean.py
+```
+
+The local fallback PDF builder is:
+
+```bash
+python scripts/build_paper_pdf.py
+```
+
+### Build the NeurIPS 2026 workshop paper
+
+The four-page paper is separate from the long technical report:
+
+```bash
+python scripts/build_workshop2026_paper.py
+```
+
+The paper uses the official NeurIPS 2026 single-blind workshop style. The strict
+build rejects pending-evidence markers and enforces the four-page main-matter
+limit:
+
+```bash
+python scripts/build_workshop2026_paper.py --submission-ready
+```
+
+Prepare the venue-upload variant, which uses the official submission notice
+instead of the explicit review-draft footer:
+
+```bash
+python scripts/build_workshop2026_paper.py --submission-upload
+```
+
+This creates an upload artifact; it does not submit the paper to a venue.
+
+The RQ1/RQ3 protocol is defined in
+[`configs/workshop2026_holdout_protocol.yaml`](configs/workshop2026_holdout_protocol.yaml);
+RQ2 uses the separate all-candidate protocol in
+[`configs/workshop2026_multiplicity_protocol.yaml`](configs/workshop2026_multiplicity_protocol.yaml).
+On a Linux CUDA/Triton worker, freeze the performance-blind task set before
+candidate generation:
+
+```bash
+python scripts/freeze_kernelbench_task_selection.py \
+  --kernelbench-dir /workspace/KernelBench
+python scripts/freeze_multiplicity_candidates.py
+python scripts/run_workshop2026_shakedown.py \
+  --task-manifest artifacts/workshop2026/task_selection_manifest.json \
+  --kernelbench-dir /workspace/KernelBench
+```
+
+Generate exactly three one-shot candidates per frozen task only after the
+selection manifest exists. This is the only command below that makes model API
+calls; it requires an explicit unlock and preserves prompts, raw responses,
+provider-returned model fields, source files, and checksums:
+
+```bash
+export GEMINI_API_KEY=<key>
+python scripts/generate_workshop2026_candidates.py \
+  --task-manifest artifacts/workshop2026/task_selection_manifest.json \
+  --kernelbench-dir /workspace/KernelBench \
+  --allow-api-generation
+unset GEMINI_API_KEY
+```
+
+Then run calibration and isolated lifecycle controls and build the formal
+campaign-validity gate before any screening:
+
+```bash
+python scripts/run_evaluator_controls.py
+python scripts/run_lifecycle_ablation.py \
+  --task-manifest artifacts/workshop2026/task_selection_manifest.json \
+  --kernelbench-dir /workspace/KernelBench
+python scripts/check_campaign_validity.py \
+  --calibration-validity artifacts/workshop2026/evaluator_controls/calibration_validity.json \
+  --lifecycle-summary artifacts/workshop2026/lifecycle_ablation/lifecycle_ablation_summary.json
+
+python scripts/run_holdout_confirmation_campaign.py \
+  --task-manifest artifacts/workshop2026/task_selection_manifest.json \
+  --candidate-manifest artifacts/workshop2026/candidate_manifest.json \
+  --kernelbench-dir /workspace/KernelBench \
+  --campaign-validity artifacts/workshop2026/campaign_validity.json \
+  --screen-only
+python scripts/run_holdout_confirmation_campaign.py \
+  --task-manifest artifacts/workshop2026/task_selection_manifest.json \
+  --candidate-manifest artifacts/workshop2026/candidate_manifest.json \
+  --kernelbench-dir /workspace/KernelBench \
+  --campaign-validity artifacts/workshop2026/campaign_validity.json \
+  --confirmation-wave wave1
+# Integrity/completeness review only. Run after the frozen 30-minute gate opens.
+python scripts/run_holdout_confirmation_campaign.py \
+  --task-manifest artifacts/workshop2026/task_selection_manifest.json \
+  --candidate-manifest artifacts/workshop2026/candidate_manifest.json \
+  --kernelbench-dir /workspace/KernelBench \
+  --campaign-validity artifacts/workshop2026/campaign_validity.json \
+  --confirmation-wave wave2
+
+python scripts/run_multiplicity_campaign.py
+python scripts/make_workshop2026_results_figure.py
+```
+
+Only the explicit generation command makes model calls. The holdout runner
+requires all controls to pass, exactly seven confirmation processes per valid
+task, and two non-adaptive temporal waves. The multiplicity runner confirms all
+20 deterministic candidates per controlled fused8 task. Historical
+free-function KernelBench candidates cannot be reused because they violate the
+corrected state contract. The completed checked-in campaign consumed 2.091
+recorded worker-hours on a Tesla T4; reproduction does not require additional
+model calls when using the frozen candidate manifest.
 
 ## Run Smoke
 
@@ -143,6 +302,7 @@ Important files:
 - `paper/paper.md`
 - `paper/methodology.md`
 - `paper/experiments.md`
+- `paper/openkernelforge_paper.pdf`
 - `paper/benchmarking_methodology_upgrade.md`
 - `paper/kernelbench_l1_pilot_plan.md`
 - `reports/openkernelforge_technical_report.md`
@@ -163,43 +323,97 @@ Import locally:
 
 ```bash
 python scripts/import_runpod_artifacts.py \
-  --archive openkernelforge_fused8_artifacts.tar.gz \
-  --out artifacts/
+  --source-root /workspace/openkernelforge \
+  --out-dir artifacts/runpod_imports
 
 python scripts/validate_research_package.py
 python scripts/update_artifact_index.py
 ```
 
-The package scripts exclude API keys, `.env` files, model weights, Hugging Face caches, and unsanitized server logs.
+The import script copies only existing target run/report artifacts and writes `artifacts/runpod_imports/artifact_manifest.json` plus `SHA256SUMS`. It records missing fused8 run directories honestly rather than fabricating uncertainty data. The package scripts exclude API keys, `.env` files, model weights, Hugging Face caches, and unsanitized server logs.
+
+Historical profiler diagnostics for the three loss candidates were collected on a RunPod Flash RTX 4090 worker. They inherit the affected reference lifecycle and are retained only for debugging. The script blocks those runs by default. After corrected candidate revalidation, pass the corrected run directories explicitly:
+
+```bash
+python scripts/profile_kernelbench_loss_candidates.py \
+  --one-shot-run-dir runs/<corrected_candidate_run> \
+  --repair-run-dir runs/<corrected_repair_run>
+```
+
+The profiler script uses preserved candidates only. It writes
+`reports/profiling/kernelbench_loss_profiler_summary.md`,
+`reports/tables/kernelbench_loss_profiler_ops.csv`,
+`reports/tables/kernelbench_loss_profiler_memory.csv`, and
+`reports/tables/kernelbench_loss_mechanism_summary.csv`. Existing files are not mechanism evidence for the paper because they profile candidates from the affected adapter run.
+
+The corrected external baseline is run through a separate fail-closed campaign
+wrapper. It requires Linux, CUDA, Triton, a passing tiny Triton kernel, the exact
+official KernelBench commit, and baseline-only configs. The 20-task stage runs
+only after all five smoke tasks have valid eager and `torch.compile`
+`max-autotune` timing:
+
+```bash
+python scripts/package_corrected_cuda_bundle.py \
+  --out artifacts/openkernelforge_workshop2026_gpu_bundle.tar.gz
+
+python scripts/run_corrected_cuda_campaign.py \
+  --kernelbench-dir /workspace/KernelBench \
+  --clone-kernelbench-if-missing \
+  --max-wall-hours 5
+```
+
+This campaign validates the corrected adapter and baseline measurement path. It
+does not generate candidates and does not by itself support a KernelBench
+generated-kernel claim. See
+`docs/methodology/corrected_cuda_campaign.md` for the exact gates and artifact
+schema.
+
+Historical headline clock validation for the same candidates was also run on the RunPod Flash RTX 4090 worker:
+
+```bash
+python scripts/validate_headline_clock.py \
+  --kernelbench-dir /workspace/KernelBench \
+  --one-shot-run-dir runs/<corrected_candidate_run> \
+  --repair-run-dir runs/<corrected_repair_run> \
+  --try-lock-clocks
+```
+
+Clock locking was attempted but rejected by worker permissions, so the result
+is reported as clock-recorded rather than locked-clock validation. The recorded values are debugging artifacts only: repeating a comparison does not repair the invalid reference lifecycle. The exact fused8 headline candidate files are not preserved locally, so fused8 labels are not relabeled by this check.
+Outputs are `reports/headline_clock_validation.md`,
+`reports/tables/headline_clock_validation.csv`, and
+`artifacts/headline_clock_validation/`.
 
 ## Current Artifact Status
 
-This repository includes source code, reports, tables, and summary metrics. The full fused8 RunPod artifacts and curated dataset are expected to be imported under `artifacts/` when available. `reports/artifact_index.md` records what is present locally versus summarized only.
+This repository includes the corrected workshop manifests, candidate sources,
+control outputs, raw paired timing blocks, confirmation records, checksum
+ledgers, and final analysis under `artifacts/workshop2026/`. The full historical
+fused8 RunPod directories remain summarized rather than fully imported.
+`reports/artifact_index.md` records both states explicitly.
 
 ## Limitations
 
-- Internal fused8 benchmark only; no KernelBench numbers yet.
-- Reported runs were done on a limited hardware and task set.
-- No Nsight or hardware-counter profiling yet.
+- The corrected external campaign uses one Tesla T4, a deterministic feasible
+  48-task subset, one model, and three candidates per task; it is not a random
+  or full KernelBench estimate.
+- Only 10 tasks produced a fully valid timed candidate, and all were matrix
+  multiplication tasks.
+- The separate controlled multiplicity study covers four fused8 tasks in one
+  shape regime and does not establish a general candidate-search effect.
+- No Nsight or hardware-counter profiling yet; the included profiler diagnostics are operator/memory attribution only.
 - No model training, LoRA, or RL is included.
 - Some report tables use provided RunPod summaries when full artifacts are not present locally.
 - No SOTA claim.
 
-## Next Work
+## Current Review Posture
 
-The next research sprint is a KernelBench L1 repeatability pilot:
-
-- select 20 L1 tasks
-- separate correctness, compile failure, runtime failure, and performance failure
-- rebenchmark top-k candidates across independent sessions
-- report repeat-stable speedup rate and single-run win decay rate
-
-The planned headline is:
-
-> X% of single-run wins fail repeat verification.
-
-`X` is intentionally blank until the study is actually run.
+The corrected campaign, controls, checksum ledgers, and formal four-page PDF are
+complete and ready for external review. The result is bounded: no corrected
+generated candidate beat eager by the prespecified margin, and the paper makes
+neither a full-KernelBench nor a SOTA claim. No venue submission or acceptance
+is claimed.
 
 ## Security Note
 
-OpenKernelForge imports and executes candidate Python files locally. Use it in trusted research environments only.
+OpenKernelForge imports and executes candidate Python files in-process after conservative AST checks. This is not an operating-system sandbox and does not protect against hangs, interpreter side effects, or invalid GPU kernels. Use disposable workers or containers with external timeouts for untrusted candidates.

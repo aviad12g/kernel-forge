@@ -1,0 +1,11 @@
+study,margin,eligible_winners,screening_wins,confirmation_wins,screen_only_promotions,notes
+RQ1 KernelBench,0.0,10,0,0,0,10 frozen valid-task winners
+RQ1 KernelBench,0.01,10,0,0,0,10 frozen valid-task winners
+RQ1 KernelBench,0.02,10,0,0,0,10 frozen valid-task winners
+RQ1 KernelBench,0.03,10,0,0,0,10 frozen valid-task winners
+RQ1 KernelBench,0.05,10,0,0,0,10 frozen valid-task winners
+RQ2 near-threshold K=8,0.0,4,4,4,0,4 frozen full-budget winners; post-hoc sensitivity
+RQ2 near-threshold K=8,0.01,4,4,3,1,4 frozen full-budget winners; post-hoc sensitivity
+RQ2 near-threshold K=8,0.02,4,3,2,1,4 frozen full-budget winners; post-hoc sensitivity
+RQ2 near-threshold K=8,0.03,4,1,1,1,4 frozen full-budget winners; post-hoc sensitivity
+RQ2 near-threshold K=8,0.05,4,0,0,0,4 frozen full-budget winners; post-hoc sensitivity

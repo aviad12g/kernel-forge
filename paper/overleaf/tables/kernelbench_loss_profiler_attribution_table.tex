@@ -1,0 +1,15 @@
+\begin{table}[htbp]
+\centering
+\caption{Profiler output retained from historical KernelBench candidates. It inherits the affected reference lifecycle and is a debugging artifact, not mechanism evidence for a performance claim.}
+\label{tab:kernelbench-loss-profiler}
+\scriptsize
+\begin{tabularx}{\linewidth}{l r X X X}
+\toprule
+Task & Speedup & Eager profile & Candidate profile & Caveat \\
+\midrule
+CE & 1.992x & not preserved; 0 launches; peak not preserved & not preserved; 0 launches; peak not preserved & historical source is excluded from attribution; current policy result: obvious\_torch\_fallback:loss.mean \\
+Triplet & 4.176x & not preserved; 0 launches; peak not preserved & not preserved; 0 launches; peak not preserved & historical source is excluded from attribution; current policy result: obvious\_torch\_fallback:out.mean \\
+KLDiv & 1.843x & not preserved; 0 launches; peak not preserved & not preserved; 0 launches; peak not preserved & historical source is excluded from attribution; current policy result: obvious\_torch\_fallback:torch.log \\
+\bottomrule
+\end{tabularx}
+\end{table}

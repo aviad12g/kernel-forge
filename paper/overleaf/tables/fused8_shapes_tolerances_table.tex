@@ -1,0 +1,20 @@
+\begin{table}[htbp]
+\centering
+\caption{Fused8 task shapes and tolerances. All tasks use float32 and deterministic seeded input generation.}
+\label{tab:fused8-shapes}
+\scriptsize
+\begin{tabularx}{\linewidth}{l Y Y r r}
+\toprule
+Task & Reference operation & Inputs & rtol & atol \\
+\midrule
+bias\_relu & \code{relu(x + bias)} & \code{x [4096,1024]}, \code{bias [1024]} & 1e-5 & 1e-6 \\
+sigmoid & \code{sigmoid(x) * z} & \code{x [4096,1024]}, \code{z [4096,1024]} & 1e-5 & 2e-6 \\
+add\_relu & \code{relu(x + y)} & \code{x [4096,1024]}, \code{y [4096,1024]} & 1e-5 & 1e-6 \\
+residual & \code{relu(x + residual + bias)} & \code{x [4096,1024]}, \code{residual [4096,1024]}, \code{bias [1024]} & 1e-5 & 1e-6 \\
+bias\_gelu & sigmoid-approximate GELU after bias add & \code{x [4096,1024]}, \code{bias [1024]} & 2e-4 & 2e-5 \\
+row\_sum & sum over final dimension & \code{x [4096,1024]} & 1e-4 & 1e-4 \\
+layernorm & layer normalization over final dimension & \code{x [4096,1024]}, \code{weight [1024]}, \code{bias [1024]} & 2e-4 & 2e-4 \\
+rmsnorm & RMS normalization over final dimension & \code{x [4096,1024]}, \code{weight [1024]} & 2e-4 & 2e-4 \\
+\bottomrule
+\end{tabularx}
+\end{table}

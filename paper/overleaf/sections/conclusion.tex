@@ -1,0 +1,5 @@
+\section{Conclusion}
+
+\okf{} demonstrates a repeatability-aware evaluation layer for LLM-generated Triton kernels. The internal fused8 study shows that deterministic templates remain a strong floor, that model kernels can beat \compile{} while losing to eager at median, and that a deterministic single-run win can disappear under repeat measurement. The KernelBench audit shows a complementary requirement: task-state contracts and baseline lifecycles must be validated before external benchmark rows are treated as evidence.
+
+The central lesson is methodological. Generated-kernel reports should distinguish correctness, compiler speedup, eager speedup, and repeat-stable speedup, and they should preserve enough state to audit those decisions. The corrected harness provides a useful default for future evaluation. Corrected external validation remains necessary before making KernelBench claims.

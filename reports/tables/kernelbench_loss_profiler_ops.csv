@@ -1,0 +1,10 @@
+task,path,status,operator,self_cpu_time_us,cpu_time_total_us,self_cuda_time_us,cuda_time_total_us,calls,reason
+CrossEntropyLoss,eager,skipped,not available,not available,not available,not available,not available,not available,current policy rejected candidate: obvious_torch_fallback:loss.mean
+CrossEntropyLoss,candidate,skipped,not available,not available,not available,not available,not available,not available,current policy rejected candidate: obvious_torch_fallback:loss.mean
+CrossEntropyLoss,compile,skipped,not available,not available,not available,not available,not available,not available,current policy rejected candidate: obvious_torch_fallback:loss.mean
+TripletMarginLoss,eager,skipped,not available,not available,not available,not available,not available,not available,current policy rejected candidate: obvious_torch_fallback:out.mean
+TripletMarginLoss,candidate,skipped,not available,not available,not available,not available,not available,not available,current policy rejected candidate: obvious_torch_fallback:out.mean
+TripletMarginLoss,compile,skipped,not available,not available,not available,not available,not available,not available,current policy rejected candidate: obvious_torch_fallback:out.mean
+KLDivLoss,eager,skipped,not available,not available,not available,not available,not available,not available,current policy rejected candidate: obvious_torch_fallback:torch.log
+KLDivLoss,candidate,skipped,not available,not available,not available,not available,not available,not available,current policy rejected candidate: obvious_torch_fallback:torch.log
+KLDivLoss,compile,skipped,not available,not available,not available,not available,not available,not available,current policy rejected candidate: obvious_torch_fallback:torch.log

@@ -1,0 +1,7 @@
+category,candidates,denominator,notes
+static_policy_failure,77,144,AST policy rejected fallback or module calls
+contract_failure,0,144,"output tree, shape, dtype, alias, or mutation contract"
+correctness_failure,9,144,numerical mismatch or nondeterministic values
+candidate_compile_or_runtime_failure,28,144,"candidate compile, verification runtime, OOM, or CUDA failure"
+full_gate_pass,27,144,"policy, contract, correctness, runtime audit, and timing passed"
+not_evaluated_compiler_baseline_failure,3,144,one task-level torch.compile OOM blocked all three candidates

@@ -1,0 +1,19 @@
+\section{Limitations}
+
+The fused8 benchmark is internal and small. It is useful as a controlled study, but it is not a substitute for broad external benchmarking. The fused8 suite uses one primary shape regime, centered on \code{[4096, 1024]} tensors. Its results characterize this controlled regime and should not be interpreted as evidence about scaling across batch sizes, feature dimensions, or sequence lengths. The historical KernelBench pilot used a capped, non-random subset selected with an incomplete memory lower bound. More importantly, its free-function candidate contract violated the official \code{ModelNew} lifecycle, could not represent parameterized task state, and paired candidates with reference modules reconstructed inside timed calls. We therefore make no KernelBench correctness or speedup claim from those runs. Corrected-adapter GPU revalidation is outstanding.
+
+The supported model budgets are small: 24 fused8 candidates for Gemini and 24 for OpenAI mini. The historical KernelBench artifacts contain one Gemini candidate per selected task and one candidate per selected repair, but the affected adapter prevents using those budgets for a model comparison. The OpenAI mini prompt was not separately tuned, so its lower fused8 verification rate should be interpreted as a result under the shared protocol rather than a definitive model-family comparison.
+
+Candidate search creates multiplicity. The template sweep evaluates many variants, and model runs select from generated candidates. Repeatability labels reduce the risk of promoting noisy single-run artifacts, but they do not eliminate selection bias or multiple-comparisons effects. The fused8 effects are reported only for their controlled setting; no family or model superiority claim is made.
+
+Some imported fused8 summaries preserve repeat medians and labels but not complete p25/p75 or bootstrap intervals; those rows are marked as not preserved. Three same-process sessions provide a practical stability check rather than a high-powered variance estimate. Within-session sample counts are high, but between-session uncertainty remains limited by the session count. Current code reports session-level summaries and rotates measurement order; historical runs used pooled timing intervals and fixed order.
+
+Repeatability thresholds are fixed implementation defaults rather than tuned constants. The legacy labeler uses \code{CV <= 0.10}; the rigorous session labeler uses \code{tau = 0.98}. The local artifacts do not preserve the per-session vectors needed for a full threshold-sensitivity analysis, so threshold robustness is not claimed.
+
+The study uses one primary benchmark GPU class. Historical loss-family profiler and clock-recorded diagnostics inherit the affected KernelBench reference lifecycle and are retained only as debugging artifacts. GPU and memory clocks were not locked for the original campaign; dynamic boost, power state, and thermal behavior may contribute to run-to-run variation. CUDA graphs were not used. For small-shape workloads, graph capture can reduce launch overhead and may change relative performance, so comparisons should be interpreted under ordinary eager and compiled execution rather than graph-captured deployment.
+
+Current compile accounting measures wrapper creation plus the first synchronized materializing call, while steady-state runtime excludes that call. Historical compile-time fields measured wrapper construction alone or were null and are not interpreted. Compile-cost amortization remains outside the paper.
+
+Static policy checks are not a security sandbox. Candidate modules execute locally after AST checks, so untrusted public submissions require disposable worker or container isolation and an external timeout.
+
+These constraints limit the scope to methodology and bounded characterization rather than leaderboard comparison.

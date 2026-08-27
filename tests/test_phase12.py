@@ -1,8 +1,9 @@
 import json
 from pathlib import Path
 
+import pytest
+
 from openkernelforge.agents.backends import OpenAIResponsesBackend
-from openkernelforge.cli import main
 from openkernelforge.config import RunConfig, load_config
 from openkernelforge.reports.fused8_curation import (
     inspect_curated_fused8_dataset,
@@ -83,6 +84,11 @@ def test_openai_api_key_redacted_from_safe_config():
     assert safe["agent"]["api_key"] == "<redacted>"
     assert safe["agent"]["extra_headers"]["Authorization"] == "<redacted>"
     assert "sk-secret" not in json.dumps(safe)
+
+
+def test_run_config_rejects_unknown_top_level_fields():
+    with pytest.raises(ValueError, match="Unknown top-level config fields: benchamrk"):
+        RunConfig.from_dict({"benchamrk": {"repeats": 120}})
 
 
 def test_run_strong_model_exits_cleanly_when_backend_unavailable(monkeypatch, capsys):

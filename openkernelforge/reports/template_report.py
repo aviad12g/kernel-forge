@@ -72,6 +72,7 @@ def format_template_autotune_report(
     for task_id, records in sorted(by_task.items()):
         best = _best_record(records)
         benchmark = best.get("benchmark_summary") or {}
+        best_speedup = _speedup_value(best)
         lines.append(
             "| {task} | {candidate} | {block} | {warps} | {stages} | {policy} | {allocation} | {shape} | {eager} | {compile} | {fast} | {promising} | `{source}` |".format(
                 task=task_id,
@@ -84,8 +85,8 @@ def format_template_autotune_report(
                 shape="yes" if best.get("shape_specialized") else "no",
                 eager=_fmt(benchmark.get("speedup_vs_eager")),
                 compile=_fmt(benchmark.get("speedup_vs_torch_compile")),
-                fast="yes" if _speedup_value(best) is not None and _speedup_value(best) >= 1.0 else "no",
-                promising="yes" if _speedup_value(best) is not None and _speedup_value(best) >= 0.8 else "no",
+                fast="yes" if best_speedup is not None and best_speedup >= 1.0 else "no",
+                promising="yes" if best_speedup is not None and best_speedup >= 0.8 else "no",
                 source=best.get("candidate_path", "n/a"),
             )
         )

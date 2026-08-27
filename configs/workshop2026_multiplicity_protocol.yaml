@@ -1,0 +1,83 @@
+study:
+  id: workshop2026_multiplicity_v1
+  purpose: controlled_all_candidate_selection_multiplicity
+  status: preregistered_pending_gpu_execution
+
+tasks:
+  ids: [bias_relu, residual_add_relu, bias_gelu, rmsnorm_small]
+  shape_regime: [4096, 1024]
+  dtype: float32
+
+candidates:
+  source: deterministic_fused8_templates
+  variants_per_task: 20
+  freeze_before_timing: true
+  template_variants:
+    generation_stage: workshop2026_multiplicity
+    validate_variants: true
+    record_skipped_variants: true
+    block_sizes: [128, 256, 512, 1024]
+    num_warps: [1, 2, 4]
+    num_stages: [3, 4]
+    contiguous_policies: [none, wrapper_contiguous]
+    output_allocation_policies: [torch.empty, torch.empty_like]
+    n_elements_modes: [runtime, constexpr]
+    feature_dim_modes: [runtime, constexpr, generic]
+    max_variants_per_task: 20
+    grid_sampling: capped_ordered
+    sort_order: mixed
+    per_task:
+      rmsnorm_small:
+        block_sizes: [1024, 2048, 4096]
+        reduction_block_sizes: [1024, 2048, 4096]
+        num_warps: [1, 2, 4]
+        num_stages: [3, 4]
+        contiguous_policies: [none, wrapper_contiguous]
+        output_allocation_policies: [torch.empty]
+        feature_dim_modes: [constexpr]
+        max_variants_per_task: 20
+
+correctness:
+  seeds: [1103, 2207, 3301, 4409, 5519]
+  same_input_repeat_executions: 2
+  require_deterministic_repeat: true
+  require_exact_output_tree: true
+  require_alias_contract: true
+
+screening:
+  processes: 1
+  process_seed: 91041
+  paired_blocks: 20
+
+confirmation:
+  fresh_processes: 7
+  process_seed_base: 101071
+  paired_blocks_per_process: 20
+  timing: cuda_event
+  minimum_interval_ms: 1.5
+  warmup_launches: 30
+  cache_state_perturbation:
+    l2_multiplier: 2.0
+    minimum_size_mb: 32
+    maximum_size_mb: 512
+    mode: read_write
+
+analysis:
+  candidate_budgets: [1, 2, 3, 5, 10, 20]
+  resamples: 1000
+  seed: 72091
+  practical_speedup_margin: 0.02
+  confirmation_estimate: median_of_process_block_medians
+  all_candidates_require_independent_confirmation: true
+  primary_outcomes: [apparent_win_rate, confirmed_win_rate, selection_optimism]
+
+environment:
+  precision:
+    allow_tf32_matmul: true
+    allow_tf32_cudnn: true
+    float32_matmul_precision: high
+
+artifacts:
+  candidate_manifest: artifacts/workshop2026/multiplicity/candidate_manifest.json
+  output_dir: artifacts/workshop2026/multiplicity/campaign
+  write_sha256_manifest: true

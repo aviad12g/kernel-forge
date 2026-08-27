@@ -1,0 +1,75 @@
+\section{Methodology}
+
+\paragraph{Task suites.}
+The controlled study uses an internal fused8 suite with eight fused operations: \code{bias\_relu}, \code{sigmoid}, \code{add\_relu}, \code{residual}, \code{bias\_gelu}, \code{row\_sum}, \code{layernorm}, and \code{rmsnorm}. Each task has a PyTorch reference, deterministic input generation, tolerances, benchmark shapes, and prompt metadata. The external pilot uses official KernelBench L1 tasks~\cite{kernelbench2025} at commit \code{423217d9fda91e0c2d67e4a43bf62f96f6d104f1}.
+
+\paragraph{KernelBench subset selection.}
+The historical KernelBench pilot loads a 100-task L1 pool, orders tasks by deterministic family round-robin, and scans that order until 20 feasible tasks are found. Inputs are materialized for each scanned task before timing, and tasks above a configured lower-bound memory estimate are skipped with reason \code{ESTIMATED\_MEMORY\_TOO\_LARGE}. The recorded 31 skips are therefore skips encountered in the scanned prefix before the selection cap, not a count over every task in the loaded pool. The corrected preflight requests metadata-only tensors first; unsupported metadata execution is skipped unless CPU fallback is explicitly enabled. Its lower-bound estimate accounts for the input-tree copies held by verification, reference and candidate module state, and configured cache-perturbation storage, but not outputs, compiler workspace, all temporaries, or allocator fragmentation. Task definitions are not modified. The selected subset covers convolution 7, matmul 7, pooling 3, and loss 3; it is neither random nor an unbiased L1 sample.
+
+\paragraph{Candidate sources.}
+The fused8 study compares deterministic Triton templates, Gemini 3.1 Flash-Lite, and OpenAI \code{gpt-5.4-mini}. The affected historical KernelBench run used Gemini only, with one candidate per selected task and one repair pass over eight selected failures. These budgets describe artifact provenance; the audit prevents interpreting their outcomes as model accuracy or repair effectiveness.
+
+Model identifiers are reported as configured API strings. The fused8 Gemini and KernelBench Gemini configs use \code{gemini-3.1-flash-lite}; the OpenAI mini fused8 config uses \code{gpt-5.4-mini}. The local artifact package does not preserve provider response \code{model} fields for the fused8 runs. KernelBench JSONL records preserve the configured \code{model} field for each candidate but not a separate provider-returned model-version field.
+
+\paragraph{Environment.}
+The final KernelBench artifacts record Python 3.12.3 on Linux 6.8, Torch 2.8.0+cu128, Triton 3.4.0, one NVIDIA GeForce RTX 5090, CUDA available, and a passing tiny Triton kernel. The final fused8 campaign was run on the same reported RunPod GPU stack, but the local paper package does not include the fused8 \code{environment\_probe.json} files. GPU and memory clocks, power limits, persistence mode, ECC status, and thermals were not recorded as locked or controlled.
+
+\paragraph{Candidate contract, verification, and timing.}
+Fused8 candidates expose \code{forward(*args)}. Every official KernelBench task that defines \code{Model} uses the corrected \code{ModelNew} contract, including tasks with an empty \code{state\_dict()}. The adapter materializes \code{get\_init\_inputs()} once under a fixed seed, clones that snapshot into persistent reference and candidate modules, and passes \code{get\_inputs()} to their forward methods. Both modules move to the target device before verification and timing. Free functions are reserved for local synthetic tasks with an explicit \code{reference\_fn} interface. Verification compares output structure, shape, dtype, finite values, numerical tolerance, and input side effects; a candidate may mutate an input only when the reference produces the same final input state. Static policy checks reject missing entry points, reference calls, high-level Torch fallbacks, unsafe imports/calls, and import-only Triton claims. They are guardrails, not an operating-system sandbox.
+
+Correct candidates are benchmarked using CUDA events~\cite{nvidiaCudaEvents}, 30 warmup iterations, three same-process measurement sessions, cache-state perturbation with a 128 MB CUDA buffer, session-level summaries, and \compile{}~\cite{ansel2024pytorch2}. Fused8 uses 120 measured samples per session. Historical KernelBench baseline validation used 100 samples per session, while candidate and repair runs used 120. Current runs rotate eager, candidate, and compile order between sessions. PyTorch compilation is materialized before runtime sampling; the recorded compile field includes wrapper creation and the first synchronized call.
+
+\paragraph{Historical KernelBench adapter audit.}
+The preserved KernelBench runs predate the corrected \code{ModelNew} and persistent-reference implementation. Their adapter required free \code{forward(*args)} candidates and reconstructed \code{Model} inside reference calls. This violated the official candidate lifecycle for every selected task; parameterized tasks additionally had no route to the reference state. We retain the original records without relabeling them, but treat their correctness and speedup rows as provisional diagnostics pending corrected-adapter revalidation. The internal fused8 study does not use this adapter.
+
+\input{tables/static_policy_checks_table}
+
+\paragraph{Timing sessions and cache-state perturbation.}
+A measurement session is a separate loop in the same process and GPU run, not a process-independent replicate. Inputs are regenerated with seed \code{1234 + session\_index}, and a fresh timer/cache-flusher object is used. The cache flusher allocates a CUDA float32 buffer on first use and fills it before each measured sample. In the paper configs the buffer is 128 MB and mode \code{write}. This perturbs cache state; it does not guarantee complete eviction of every cache level. Timing-level intervals describe within-session samples; session-speedup summaries represent the three repeated loops and remain descriptive at this small session count.
+
+\subsection{Repeatability Label Definition}
+
+Let \code{s\_single} be the original single-run or run-summary speedup vs eager. Let \code{s\_rep} be the repeat median speedup. Let \code{session\_speedups} be per-session speedups from the rigorous benchmarker, and let \code{tau = 0.98} be the default contradictory-session threshold. The implemented labeler does not use CI/IQR thresholds; those statistics are reported where preserved.
+
+Imported fused8 summaries use the legacy repeatability-report labels because those runs were produced before the current rigorous session-label inputs were preserved in the local package. Historical KernelBench files contain fields produced by the rigorous session labeler, but those labels remain invalid as evidence because the surrounding task contract and reference lifecycle were defective. We report both definitions to preserve provenance rather than silently relabeling old artifacts. The rigorous labeler is preferred for corrected runs because it records session-level parity directly in the benchmark summary.
+
+\begin{verbatim}
+legacy repeatability report:
+  if s_rep is missing: INSUFFICIENT_DATA
+  elif s_rep >= 1.0 and coefficient_of_variation <= 0.10:
+      REPEAT_STABLE_WIN
+  elif s_single >= 1.0 and s_rep < 1.0:
+      SINGLE_RUN_ONLY_WIN
+  elif s_rep >= 1.0:
+      UNSTABLE
+  else:
+      BELOW_EAGER
+
+rigorous benchmark summary:
+  stable_above_eager =
+      median(session_speedups) >= 1.0
+      and all(speedup >= tau for speedup in session_speedups)
+
+  if speedup_vs_eager is missing: INSUFFICIENT_DATA
+  elif speedup_vs_eager >= 1.0 and stable_above_eager:
+      REPEAT_STABLE_WIN
+  elif speedup_vs_eager >= 1.0:
+      UNSTABLE
+  else:
+      BELOW_EAGER
+\end{verbatim}
+
+Thus \code{bias\_relu} is \code{SINGLE\_RUN\_ONLY\_WIN}: it reached \speed{1.029} in the original fused8 run and fell to \speed{0.976} repeat median. The rigorous path reserves this label for no result because it has no separate single-run observation; an above-eager session median that fails \code{stable\_above\_eager} is \code{UNSTABLE}. Missing CI/IQR fields are not used to infer labels.
+
+The thresholds are implementation defaults, not tuned values. The legacy \code{CV <= 0.10} rule is inherited from older repeatability reports. The rigorous \code{tau = 0.98} default allows small session-level timing variation while still requiring an above-eager median. The preserved artifacts do not include the full per-session speedup vectors needed to recompute headline labels under alternative \code{tau} values, so the paper does not claim threshold robustness.
+
+\input{tables/protocol_table}
+
+Figure~\ref{fig:pipeline} summarizes the evaluation path from candidate construction through artifact export. Each transition is recorded so that a reported speedup can be traced back to its prompt or template, policy outcome, correctness result, and timing samples.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{openkernelforge_pipeline.pdf}
+\caption{\okf{} evaluation flow. Candidate artifacts pass through policy checks, correctness verification, CUDA-event benchmarking, repeatability labeling, and report or dataset export.}
+\label{fig:pipeline}
+\end{figure}

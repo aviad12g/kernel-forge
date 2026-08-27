@@ -64,7 +64,7 @@ def format_template_copy_report(bundle: dict[str, Any]) -> str:
             )
         )
 
-    violation_counts = Counter()
+    violation_counts: Counter[str] = Counter()
     for record in records:
         preservation = record.get("template_preservation") or {}
         for warning in preservation.get("warnings") or []:

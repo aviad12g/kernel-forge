@@ -1,0 +1,19 @@
+\begin{table}[htbp]
+\centering
+\caption{Compact positioning. \okf{} contributes an evaluation protocol and artifact discipline rather than a new generator or leaderboard result.}
+\label{tab:positioning}
+\scriptsize
+\begin{tabularx}{\linewidth}{l l X}
+\toprule
+Area & Main role & Relation to \okf{} \\
+\midrule
+KernelBench & benchmark & scale-oriented model evaluation \\
+CUDA-L1 & model/system & feedback-driven CUDA optimization \\
+Triton / GPU DSLs & DSL/compiler & candidate implementation target \\
+PyTorch 2 / TorchInductor & compiler baseline & practical compile baseline \\
+Systems measurement methodology & measurement & repeatability and bias control \\
+Verifier-guided repair / Self-Refine-style feedback & repair & one capped verifier-feedback pass \\
+OpenKernelForge & this paper & evaluation protocol and artifact discipline \\
+\bottomrule
+\end{tabularx}
+\end{table}

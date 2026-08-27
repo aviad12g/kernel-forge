@@ -26,6 +26,12 @@ def validate_template_variant(metadata: dict[str, Any]) -> TemplateVariantValida
     """Validate a template variant before it enters verifier/benchmark runs."""
 
     block_size = metadata.get("block_size")
+    if block_size is None:
+        return TemplateVariantValidationResult(
+            valid=False,
+            rejection_reason="invalid_block_size",
+            warnings=["BLOCK_SIZE must be an integer, got None"],
+        )
     try:
         block_size_int = int(block_size)
     except (TypeError, ValueError):

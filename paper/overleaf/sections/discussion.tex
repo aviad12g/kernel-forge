@@ -1,0 +1,32 @@
+\section{Discussion}
+
+\paragraph{Evaluation role.}
+\okf{} contributes an evaluation protocol and artifact discipline rather than a new kernel-generation model. Its purpose is to make generated-kernel claims auditable: every candidate should be tied to a prompt or template, a policy decision, correctness evidence, benchmark summaries, and a repeatability label. The results suggest that this discipline is useful because the same candidate can pass correctness, beat \compile{}, lose to eager, or fail repeat verification depending on which claim is being made.
+
+\paragraph{Controlled evidence and evaluator audit.}
+The fused8 study supplies the controlled performance evidence: it compares deterministic templates, Gemini, and OpenAI mini under one task suite and measurement protocol. The KernelBench artifacts now serve a different role. They show that artifact preservation made it possible to identify a state-contract defect and timed model-construction confound after the run. The corrected adapter is implemented and tested, but its GPU results are not yet part of this paper.
+
+\paragraph{What is and is not claimed.}
+\begin{table}[htbp]
+\centering
+\caption{Claim boundaries. The paper argues for a measurement and artifact discipline, not for model superiority or leaderboard performance.}
+\label{tab:claim-boundaries}
+\small
+\begin{tabularx}{\linewidth}{Y Y}
+\toprule
+Claim supported by this paper & Claim not made \\
+\midrule
+Repeatability-aware evaluation changes which wins are stable. & No state of the art generated-kernel performance claim. \\
+Templates are a useful performance floor in the fused8 study. & No benchmark-wide KernelBench result or estimate. \\
+Historical KernelBench artifacts expose adapter and policy failure modes. & No validated KernelBench accuracy or speedup estimate from the affected runs. \\
+Corrected task contracts are required before external results are promoted. & No proof that LLM speedups are broadly repeatability-fragile. \\
+Compiler-baseline and eager-baseline speedups are distinct claims. & No deployment-cost or compile-amortization analysis. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\paragraph{Stable wins as characterization, not rankings.}
+Stable-win counts are descriptive. Counts such as three template wins, two Gemini wins, or one OpenAI mini win identify candidates that survive the protocol under a fixed budget; they are too small to support statistically significant model rankings. The stronger finding is structural: generated-kernel reports should distinguish correctness, compiler-baseline speedup, eager speedup, and repeat-stable speedup.
+
+\paragraph{Implications for generated-kernel evaluation.}
+The protocol should be treated as a useful default for generated-kernel evaluation, not as a universal prescription for every deployment setting. In exploratory settings, single-run speed can remain a useful search signal. For paper-facing or dataset-facing claims, however, the evidence here supports preserving artifacts and assigning conservative repeatability labels before promoting a candidate as fast.

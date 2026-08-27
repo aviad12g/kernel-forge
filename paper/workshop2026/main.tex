@@ -1,0 +1,62 @@
+\documentclass{article}
+
+\usepackage[sglblindworkshop]{neurips_2026}
+\workshoptitle{Machine Learning for Systems}
+\makeatletter
+\ifdefined\okfsubmissionupload
+\else
+\renewcommand{\@noticestring}{Workshop review draft. Not submitted.}
+\fi
+\makeatother
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{tabularx}
+\usepackage{url}
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  citecolor=blue!45!black,
+  urlcolor=blue!45!black,
+  pdftitle={Auditing LLM-Generated GPU Kernel Claims with Contract-Aware Holdout Re-Evaluation},
+  pdfauthor={Aviad Cohen}
+}
+
+\graphicspath{{figures/}}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\system}{OpenKernelForge}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+
+\title{Auditing LLM-Generated GPU Kernel Claims with Contract-Aware Holdout Re-Evaluation}
+\author{Aviad Cohen\\Independent Researcher}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\input{sections/abstract}
+\end{abstract}
+
+\input{sections/introduction}
+\input{sections/protocol}
+\input{sections/evidence}
+\input{sections/discussion}
+
+\label{mainmatterend}
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\clearpage
+\appendix
+\small
+\input{sections/appendix}
+
+\end{document}

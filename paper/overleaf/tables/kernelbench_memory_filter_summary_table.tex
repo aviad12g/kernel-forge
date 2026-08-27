@@ -1,0 +1,30 @@
+\begin{table}[htbp]
+\centering
+\caption{Historical KernelBench memory filtering. The estimate was a lower bound and the affected run is retained only to document selection provenance.}
+\label{tab:kernelbench-memory-filter}
+\scriptsize
+\begin{tabularx}{\linewidth}{l l r X}
+\toprule
+Category & Family & Count & Shape examples \\
+\midrule
+selected feasible & all & 20 & see selected task appendix \\
+skipped memory cap & all & 31 & [4096,393216]; [4096,393216] \\
+selected feasible & activation & 0 & not preserved \\
+skipped memory cap & activation & 7 & [4096,393216]; [4096,393216] \\
+selected feasible & convolution & 7 & [256,3,224,224]; [16,3,64,64,64] \\
+skipped memory cap & convolution & 0 & not preserved \\
+selected feasible & kernelbench\_l1 & 0 & not preserved \\
+skipped memory cap & kernelbench\_l1 & 6 & [4096,393216]; [4096,393216] \\
+selected feasible & loss & 3 & [32768,4096]; [16384,16384] \\
+skipped memory cap & loss & 3 & [32768,32768]; [32768,32768] \\
+selected feasible & matmul & 7 & [16,1024,2048]; [8,256,512,256] \\
+skipped memory cap & matmul & 0 & not preserved \\
+selected feasible & normalization & 0 & not preserved \\
+skipped memory cap & normalization & 6 & [64,64,512,512]; [112,64,512,512] \\
+selected feasible & pooling & 3 & [64,192,65536]; [32,64,512,512] \\
+skipped memory cap & pooling & 3 & [16,32,128,128,128]; [16,64,2048,2048] \\
+selected feasible & reduction & 0 & not preserved \\
+skipped memory cap & reduction & 6 & [128,4096,4095]; [128,4096,4095] \\
+\bottomrule
+\end{tabularx}
+\end{table}

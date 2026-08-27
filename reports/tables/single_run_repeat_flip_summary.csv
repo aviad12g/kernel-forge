@@ -1,0 +1,3 @@
+scope,artifact_source,single_run_above_eager,repeat_below_eager,flip_rate,notes
+fused8 template task-best summary,reports/tables/fused8_template_results.csv,4,1,0.2500,task-best imported summary only; bias_relu is the observed flip
+fused8 template all 160 candidates,runs/20260520_155839,not preserved,not preserved,not preserved,full per-candidate single-run and repeat-median pairs are not preserved locally

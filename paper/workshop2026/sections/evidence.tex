@@ -1,0 +1,80 @@
+\section{Corrected campaign results}
+
+The historical fused8 artifacts provide one motivating reversal: a deterministic
+\code{bias\_relu} template measured 1.029$\times$ above eager in one screening
+run but 0.976$\times$ at repeated median. Model sampling cannot explain the
+change. We do not treat this case as a population frequency. The corrected
+campaign instead separates three questions and reports complete, checksummed
+evidence for each (Table~\ref{tab:final-outcomes} and
+Figure~\ref{fig:corrected-campaign}).
+
+\begin{table}[t]
+\centering
+\small
+\caption{Completed corrected campaign. External winners remain below eager; a
+near-threshold stress test exposes one screen-only promotion; lifecycle timing
+isolates host-side inflation.}
+\label{tab:final-outcomes}
+\begin{tabularx}{\linewidth}{@{}lrrrrY@{}}
+\toprule
+Study & Complete & Screen & Confirm & False prom. & Key estimate \\
+\midrule
+RQ1 KernelBench & 10/48 & 0 & 0 & -- & 1.014 ratio $[0.915,1.170]$ \\
+RQ2 easy, $K=20$ & 4/4 & 1.00 & 1.00 & 0 & $0.00000$ log optimism \\
+RQ2 near, $K=8$ & 4/4 & 0.75 & 0.50 & 1/3 & $0.00725$ log optimism \\
+RQ3 lifecycle & 24/24 & -- & -- & -- & 1.053 host; 1.000 event \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\paragraph{RQ1: validity precedes speed.}
+All 144 Gemini candidates were frozen before timing. Of 141 evaluated records,
+77 failed static policy, none failed only an output contract, 9 failed numerical
+or repeat correctness, 28 failed during candidate compilation or execution, and
+27 passed the full gate. A separate compiler-baseline OOM blocked the remaining
+task's three candidates before evaluation. The valid candidates covered 10 of
+48 tasks, all matrix multiplications. One winner beat compiler (1.826$\times$)
+but not eager (0.937$\times$); a separate seven-process A4500 check confirmed
+2.001$\times$ versus compile. Every frozen winner was below eager in screening and confirmation, so the
+false-promotion fraction is undefined rather than zero. Across the 10 valid
+tasks, the median screening-to-confirmation ratio was 1.014 with task-bootstrap
+interval $[0.915,1.170]$. The broad interval contains parity and does not support
+a directional selection-optimism claim.
+
+\paragraph{RQ2: multiplicity depends on the performance regime.}
+The easy grid remains a negative control: all 80 deterministic candidates
+confirmed above the margin, so apparent and confirmed win rates were 1.0 for
+every $K\leq20$ on the original T4 and a same-GPU A4500 replication. The
+disjoint calibrated stress test instead placed 32 frozen
+candidates near parity. At $K=8$, screening promoted three of four task winners,
+whereas independent confirmation retained two. The removed \code{bias\_gelu}
+winner moved from 1.0271$\times$ to 1.0001$\times$; \code{bias\_relu} and
+\code{rmsnorm} remained above the margin. Across candidate resamples, apparent
+and confirmed win rates diverged from 0.154 versus 0.124 at $K=1$ to 0.750
+versus 0.500 at $K=8$ (Figure~\ref{fig:corrected-campaign}). Median log optimism
+at $K=8$ was 0.00725, but its four-task bootstrap interval
+$[-0.01239,0.02661]$ contains zero. The observed false promotion therefore
+supports the protocol's mechanism without establishing a population rate.
+Across frozen full-budget winners, RQ1 remains at zero wins for margins from
+0--5\%; the near-threshold screen-only promotion persists at 1\%, 2\%, and 3\%
+(Appendix~A).
+
+\paragraph{RQ3: timing boundaries matter.}
+The lifecycle control completed 24/24 process rows across eight tasks. Rebuilding
+and transferring the reference inside the measured call changed synchronized
+host latency by a median factor of 1.053, while the median enclosing CUDA-event
+ratio was 1.0001. The difference shows that host lifecycle contamination can
+alter end-to-end claims without changing device execution, and that the timing
+boundary must be stated explicitly.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{corrected_campaign_results.pdf}
+  \caption{Corrected campaign outcomes. Panel A shows the 10 valid KernelBench
+  winners, all below the 1.02$\times$ margin in screening and fresh-process
+  confirmation. Panel B shows the calibrated stress test's apparent and
+  independently confirmed win rates; their gap grows with candidate budget.
+  Panel C shows reconstruct-per-call host-lifecycle inflation across 24 control
+  processes.}
+  \label{fig:corrected-campaign}
+\end{figure}

@@ -1,0 +1,5 @@
+task_or_family,likely_eager_path,evidence,confidence,caveat,evidence_status
+loss,torch.nn.functional loss functions and reductions,historical task source and profiler files,source-level only,affected reference lifecycle prevents performance attribution,historical_adapter_output_only
+matmul,"ATen matmul/elementwise paths, often backed by cuBLAS for dense matmul tasks",KernelBench task names and prompt sources are matmul variants,medium,diagonal/triangular variants may use elementwise or masking paths rather than plain GEMM,historical_adapter_output_only
+convolution,"torch.nn convolution modules, typically ATen/cuDNN CUDA kernels",KernelBench task sources instantiate Conv2d/Conv3d/transposed convolution modules,medium,exact backend algorithm not measured,historical_adapter_output_only
+pooling,torch.nn pooling modules using ATen CUDA pooling kernels,KernelBench task sources instantiate MaxPool/AveragePool modules,medium,exact kernel path not measured,historical_adapter_output_only

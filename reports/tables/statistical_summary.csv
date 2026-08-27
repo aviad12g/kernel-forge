@@ -1,0 +1,6 @@
+metric,value,artifact_source,notes
+stable-win count caveat,small counts,reports/tables/fused8_model_comparison.csv and reports/tables/kernelbench_l1_pilot.csv,fused8 counts are descriptive; KernelBench labels are historical affected-adapter output
+independent sessions,3,KernelBench timing metadata and rigorous fused8 configs,practical stability check; not high-powered across-session variance estimation
+KernelBench tasks loaded,100,runs/20260520_202314/kernelbench_l1_check.json,historical adapter field; not current external validation
+KernelBench memory skips encountered before selection cap,31,runs/20260520_202314/kernelbench_l1_check.json,historical incomplete lower-bound filter; not current external validation
+fused8 all-candidate flip frequency,not preserved,runs/20260520_155839 missing locally,full per-candidate single-run and repeat-median pairs are not preserved locally

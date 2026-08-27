@@ -1,41 +1,41 @@
-# OpenKernelForge: Verifier-Guided Triton Kernel Generation with Template Baselines and Repeatability-Aware Evaluation
+# OpenKernelForge: Repeatability-Aware Evaluation for LLM-Generated Triton Kernels
 
 ## 1. Abstract
 
-OpenKernelForge is an open-source research harness for verifier-guided Triton kernel generation. The current system combines task definitions, model and template candidate generation, static policy checks, correctness verification, benchmarking, repeatability analysis, and dataset export. This report summarizes the first internal fused8 evaluation campaign. The results are intentionally modest: LLMs can generate correct fused Triton kernels, but deterministic templates remain a strong performance floor and repeatability changes the interpretation of many apparent wins. These are internal fused8 results only, not KernelBench results and not a SOTA claim.
+Generated GPU kernels need correctness and independently confirmed speed, not merely plausible source code or one favorable timing sample. OpenKernelForge evaluates Triton candidates with policy checks, contract-aware correctness tests, randomized paired CUDA-event timing, fresh-process confirmation, evaluator controls, and checksummed artifacts. In the corrected workshop campaign, 27 of 141 evaluated candidate records passed the full gate, covering 10 of 48 selected KernelBench L1 tasks; none of the 10 frozen winners exceeded eager by the prespecified 2% margin in screening or confirmation. A separate controlled deterministic fused8 study found no multiplicity-driven false promotion for candidate budgets from 1 through 20. The historical KernelBench pilot remains an evaluator-audit artifact and is excluded from these corrected results.
 
 ## 2. Motivation
 
-Kernel generation agents need more than pass/fail execution. Useful systems need reproducible prompts, raw responses, candidate sources, policy checks, correctness traces, timing data, repeatability, and structured failure labels. OpenKernelForge was built to make those artifacts first-class so later open-model fine-tuning can be grounded in verified evidence rather than isolated examples.
+Kernel generation agents need more than pass/fail execution. Useful systems need reproducible prompts, raw responses, candidate sources, policy checks, correctness traces, timing data, repeatability, and structured failure labels. OpenKernelForge was built to make those artifacts first-class so generated-kernel claims are grounded in repeatable evidence rather than isolated fast samples.
 
 ## 3. System Overview
 
 - Task layer: PyTorch references, deterministic inputs, shape metadata, tolerances, and prompt hints.
 - Agent layer: dummy, fake, OpenAI-compatible, local vLLM-compatible, and deterministic template agents.
-- Harness layer: candidate extraction, static policy checks, sandboxed import, verifier, benchmarker, and JSONL logging.
+- Harness layer: candidate extraction, conservative AST policy checks, trusted in-process loading, verifier, benchmarker, and JSONL logging.
 - Reporting layer: summaries, run analysis, failure taxonomy, repeatability reports, fused8 reports, and dataset curation.
 - Artifact layer: prompt files, raw responses, candidate source, logs, environment probes, datasets, and human-readable reports.
 
 ## 4. Benchmark Tasks
 
-The project started with a three-task sandbox: `vector_add`, `relu`, and `bias_relu`. That sandbox validated the harness but showed that isolated elementwise tasks are poor standalone performance targets. The project then moved to an internal fused8 benchmark: `bias_relu`, `sigmoid_mul`, `add_relu`, `residual_add_relu`, `bias_gelu`, `row_sum`, `layernorm_small`, and `rmsnorm_small`. These fused workloads are better aligned with Triton launch amortization and realistic kernel-generation behavior.
+The project started with a three-task sandbox: `vector_add`, `relu`, and `bias_relu`. That sandbox validated the harness but showed that isolated elementwise tasks are poor standalone performance targets. The project then moved to an internal fused8 benchmark: `bias_relu`, `sigmoid`, `add_relu`, `residual`, `bias_gelu`, `row_sum`, `layernorm`, and `rmsnorm`. These fused workloads are better aligned with Triton launch amortization and realistic kernel-generation behavior.
 
 ## 5. Methods
 
-Each candidate must expose `forward(*args)`. Candidates pass through policy checks before verification. Correct candidates are benchmarked against PyTorch eager and, when configured, `torch.compile`. Legacy artifacts use the original wall-clock timing path; the rigorous opt-in path now records CUDA-event timing, warmup and sample counts, median/IQR, coefficient of variation, optional bootstrap intervals, optional cache flushing, independent sessions, and compile/runtime separation where practical. Repeatability is measured by rebenchmarking top candidates multiple times. Dataset export separates repeat-stable fast candidates, single-run-only candidates, promising candidates, optimization pairs, and rejected or unstable candidates.
+Fused8 candidates expose `forward(*args)`. Official KernelBench tasks now materialize one seeded `get_init_inputs()` snapshot and construct persistent reference `Model` and candidate `ModelNew` instances from it before verification and timing. Every official `Model` task rejects free functions, including tasks with an empty `state_dict()`. Current benchmarking rotates eager, candidate, and compile order across three same-process sessions, reports session-level speedups, and materializes compilation before runtime sampling. The AST policy rejects high-level Torch compute, unsafe/import-time calls, task imports, and false Triton claims, but it is not an operating-system sandbox. Historical KernelBench records predate these corrections and are not interpreted as model or performance evidence.
 
 ## 6. Model and Template Baselines
 
 - Deterministic templates sweep block size, warps, stages, allocation policy, contiguity policy, and shape specialization.
-- Gemini fused8 baseline used the cheap fused8 protocol and produced correct kernels reliably.
-- Gemini template-guided used deterministic template context but did not improve median speed.
-- OpenAI mini and GPT-5.5 cheap runs were correct and competitive but did not clearly dominate Gemini or templates.
-- Qwen 7B local zero-shot was weak under the cheap fused8 protocol.
-- Qwen 14B was not tested because the vLLM pod ran out of disk/cache space during model download.
+- Gemini rigorous fused8 used 24 generated candidates and verified 23/24.
+- OpenAI mini rigorous fused8 used 24 generated candidates and verified 12/24.
+- Configured model strings are audited in `reports/model_identifier_audit.md`: fused8 Gemini and KernelBench Gemini use `gemini-3.1-flash-lite`, and OpenAI mini uses `gpt-5.4-mini`. Provider-returned model-version fields are not preserved for every run.
+- Earlier Gemini template-guided, OpenAI, GPT-5.5, and Qwen runs are legacy timing context, not primary paper-facing results.
+- Qwen 7B local zero-shot was weak under the cheap fused8 protocol; Qwen 14B was not evaluated because serving failed due disk/cache capacity.
 
 ## 7. Results
 
-Provenance note: the latest RunPod fused8 artifacts are not present in this local checkout, so these tables use the manually provided run summaries for missing artifacts. `reports/artifact_index.md` records which canonical artifacts are absent locally.
+Provenance note: the paper-facing rigorous fused8 numbers are from RunPod artifacts. `reports/artifact_index.md` records which canonical artifacts are present locally.
 
 ### Three-Task Conclusion
 
@@ -47,51 +47,47 @@ Provenance note: the latest RunPod fused8 artifacts are not present in this loca
 
 ### Fused8 Deterministic Template Results
 
-These are the current paper-facing deterministic-template numbers from the rigorous CUDA-event run `runs/20260520_155839`. The older 2076-candidate template-wide table remains useful as historical search evidence, but should be labeled legacy timing.
+These are the current paper-facing deterministic-template numbers from the rigorous CUDA-event run `runs/20260520_155839`. The older 2076-candidate template-wide table is legacy timing.
+The fused8 suite uses one primary shape regime centered on `[4096, 1024]`, so the fused8 results characterize this controlled regime rather than scaling behavior.
 
 | Task | Best single-run | Repeat median | Stable above eager | Above torch.compile |
 | --- | --- | --- | --- | --- |
 | bias_relu | 1.029 | 0.976 | no | yes |
-| sigmoid_mul | 0.998 | 0.934 | no | yes |
+| sigmoid | 0.998 | 0.934 | no | yes |
 | add_relu | 0.947 | 0.938 | no | yes |
-| residual_add_relu | 1.140 | 1.023 | yes | yes |
+| residual | 1.140 | 1.023 | yes | yes |
 | bias_gelu | 1.473 | 1.485 | yes | yes |
 | row_sum | 0.790 | 0.674 | no | yes |
-| layernorm_small | 0.843 | 0.791 | no | yes |
-| rmsnorm_small | 1.674 | 1.452 | yes | yes |
+| layernorm | 0.843 | 0.791 | no | yes |
+| rmsnorm | 1.674 | 1.452 | yes | yes |
 
 ### Model Comparison
 
-| Baseline | Candidates | Verified | Median eager speedup | Tasks above eager | Repeat-stable wins | Conclusion |
-| --- | --- | --- | --- | --- | --- | --- |
-| deterministic templates rigorous CUDA-event | 160 | 160/160 | 0.945 | 4/8 single-run | residual_add_relu, bias_gelu, rmsnorm_small | current paper-facing deterministic template table; capped rigorous grid |
-| deterministic templates legacy timing | 2076 | 2076/2076 | 0.862 | 5/8 single-run | residual_add_relu, bias_gelu, rmsnorm_small | historical wide search; keep as legacy timing |
-| Gemini fused8 baseline | 28 | 28/28 | 0.933 | 4/8 single-run | competitive but not final stable winner in provided summary | strong zero-shot correctness and competitive speed |
-| Gemini template-guided | 34 | 34/34 | 0.798 | 4/8 single-run | residual_add_relu | useful optimization data; median performance regressed |
-| OpenAI mini cheap | 8 | 8/8 | 0.882 | 3/8 single-run | residual_add_relu, bias_gelu, rmsnorm_small | cheap and competitive; not clearly above Gemini |
-| GPT-5.5 cheap | 8 | 8/8 | 0.927 | provided summary: not dominant | bias_gelu, rmsnorm_small | correct and usable; not clearly better under cheap protocol |
-| Qwen 7B local | 8 | 1/8 effective | 0.002 | 0/8 | none | not competitive zero-shot |
+| Baseline | Candidates | Verified | Median eager speedup | Median compile speedup | Uncertainty | Repeat-stable wins | Conclusion |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| template | 160 | 160/160 | 0.945 | 1.079 | not preserved | residual, bias_gelu, rmsnorm | strongest overall floor |
+| Gemini | 24 | 23/24 | 0.923 | 1.863 | not preserved | bias_gelu, rmsnorm | strongest model correctness; stable wins below deterministic template medians |
+| OpenAI mini | 24 | 12/24 | 0.888 | 1.835 | not preserved | residual | weaker correctness; one stable win over deterministic template repeat median |
+| legacy model rows | various | various | legacy | legacy | legacy | legacy timing | historical context only; not primary paper-facing comparison |
 
 ## 8. Repeatability Analysis
 
-Repeatability changed several conclusions. In the three-task sandbox, single-run wins for `bias_relu` did not survive repeat benchmarking. In fused8, deterministic templates produced repeat-stable wins for `residual_add_relu`, `bias_gelu`, and `rmsnorm_small`; the final stable winner for `residual_add_relu` came from Gemini template-guided. Single-run wins remain useful search signals, but they are not sufficient evidence for benchmark claims.
+Repeatability changed several conclusions. In the three-task sandbox, single-run wins for `bias_relu` did not survive repeat benchmarking. In rigorous fused8, deterministic `bias_relu` was also a single-run-only win: it reached 1.029x in the original run and fell to 0.976x repeat median. The top-1 LLM above-eager wins in the rigorous Gemini and OpenAI mini runs did survive repeatability, so the strongest broad LLM-fragility headline is not supported by this sample. Single-run wins remain useful search signals, but they are not sufficient evidence for benchmark claims.
 
-The benchmarker now supports explicit repeatability labels: `REPEAT_STABLE_WIN`, `SINGLE_RUN_ONLY_WIN`, `UNSTABLE`, `BELOW_EAGER`, and `INSUFFICIENT_DATA`. These labels are intentionally conservative. A single fast sample, or even a single-run task winner, is not sufficient to claim a kernel improvement unless independent measurement sessions preserve the win.
-
-Implementation status: CUDA-event timing, optional cache flushing, independent sessions, and richer sample summaries are implemented as an opt-in rigorous benchmark path. CPU tests pass. A RunPod RTX 5090 methodology check completed at `runs/20260520_145721` with CUDA-event timing, cache flushing performed, and three independent sessions. The configured rigorous fused8 run completed at `runs/20260520_155839` with 160/160 verified candidates. The deterministic template table above is now rigorous CUDA-event timing; the LLM/OpenAI/Gemini rows remain legacy timing until rerun. Rigorous Gemini and OpenAI mini configs exist with 24 candidates per model, but their results are not reported until those model runs complete.
+The local artifact recovery pass imports the available KernelBench pilot and repair artifacts under `artifacts/runpod_imports/` and records SHA256 checksums. The three rigorous fused8 run directories are still missing locally, so full fused8 p25/p75, bootstrap intervals, per-session medians, and all-160-candidate single-run/repeat flip pairs remain unrecovered. The paper therefore reports the imported task-best `bias_relu` flip and does not claim a global fused8 flip rate.
 
 ### Stable Winners By Task
 
-| Task | Stable winner | Source type | Repeat median | Interpretation |
-| --- | --- | --- | --- | --- |
-| bias_relu | none confirmed above eager | n/a | 0.976 | single-run win remains below eager on repeat |
-| sigmoid_mul | none confirmed above eager | n/a | 0.934 | near-eager but below eager on repeat |
-| add_relu | none confirmed above eager | n/a | 0.938 | near-eager but below eager on repeat |
-| residual_add_relu | deterministic template | template | 1.023 | repeat-stable deterministic template win under rigorous timing |
-| bias_gelu | deterministic template | template | 1.485 | strong repeat-stable deterministic template win |
-| row_sum | none confirmed above eager | n/a | 0.674 | below eager under rigorous timing |
-| layernorm_small | none confirmed above eager | n/a | 0.791 | below eager under rigorous timing |
-| rmsnorm_small | deterministic template | template | 1.452 | strong repeat-stable deterministic template win |
+| Task | Stable winner | Source type | Repeat median | Uncertainty | Closest comparison | Interpretation |
+| --- | --- | --- | --- | --- | --- | --- |
+| bias_relu | none | n/a | 0.976 | not preserved | template single-run 1.029 | single-run template win fell below eager |
+| sigmoid | none | n/a | 0.997 | std 0.029, CV 0.030 | Gemini 0.997 | nearest model remained below eager |
+| add_relu | none | n/a | 0.968 | std 0.003, CV 0.003 | Gemini 0.968 | nearest model remained below eager |
+| residual | OpenAI mini | llm | 1.074 | std 0.048, CV 0.045 | template 1.023 | OpenAI mini is the only model-over-template stable win |
+| bias_gelu | template | template | 1.485 | not preserved | Gemini 1.387 | template remains stronger than Gemini |
+| row_sum | none | n/a | 0.674 | not preserved | Gemini 0.646 | all verified candidates below eager |
+| layernorm | none | n/a | 0.791 | not preserved | Gemini 0.785 | all verified candidates below eager |
+| rmsnorm | template | template | 1.452 | not preserved | Gemini 1.415 | template remains strongest by repeat median |
 
 ## 9. Dataset Curation
 
@@ -116,20 +112,54 @@ The curated fused8 dataset separates repeat-stable targets from unstable and sin
 
 ## 11. Discussion
 
-The most important result is not that one model wins. It is that correctness and speed are separable. Once prompts and policy checks made correctness reliable, speed remained hard. Deterministic templates are not just baselines; they are a floor that model outputs must beat. Template context is useful for producing optimization data, but current models do not automatically preserve fast structure.
+The most important result is not that one model wins. It is that correctness, single-run speed, repeat-stable speed, and compiler-baseline performance are separable. Gemini is strong on fused8 correctness, OpenAI mini finds the stable `residual` winner despite weaker correctness, and templates remain the strongest overall floor. Generated kernels may beat weak compiler-generated paths while still losing to library-specialized eager kernels. The evaluation layer is therefore the main contribution: generated kernels should be discussed with repeatability labels and compiler baselines, not isolated timing samples.
+
+Historical KernelBench profiler and clock-recorded files are retained as debugging artifacts. They inherit the invalid reference lifecycle, so they do not support mechanism attribution or speedup persistence claims.
+
+### Corrected workshop campaign
+
+The corrected external study pinned official KernelBench commit
+`423217d9fda91e0c2d67e4a43bf62f96f6d104f1`, selected 48 tasks without reading
+candidate or timing fields, froze three Gemini candidates per task, and
+separated screening from seven-process confirmation. Ten tasks produced a
+fully valid frozen winner, all in the matrix-multiplication family. No winner
+crossed the 2% eager margin. The median screening-to-confirmation ratio was
+1.014 with task-bootstrap interval [0.915, 1.170]. Evaluator calibration and
+lifecycle controls passed before screening; checksummed raw artifacts are under
+`artifacts/workshop2026/`.
+
+The separate all-candidate fused8 study confirmed every valid deterministic
+candidate and found apparent and confirmed win rates of 1.0 for all tested
+budgets. This negative multiplicity result is a boundary condition, not evidence
+that search multiplicity is harmless in other settings.
+
+A separate calibrated near-threshold stress test on an RTX A4500 froze 32
+primary candidates after disjoint calibration. At `K=8`, the apparent win rate
+was 0.75 and the independently confirmed rate was 0.50. The `bias_gelu` winner
+fell from 1.0271x in screening to 1.0001x in confirmation. Median log optimism
+was 0.007248 with four-task bootstrap interval `[-0.012395, 0.026614]`. This is
+direct evidence of one screen-only promotion in the calibrated regime, but the
+small task count and interval do not support a population claim.
 
 ## 12. Limitations
 
-- Internal fused8 benchmark only; not KernelBench.
-- Small task set and a single GPU class for the reported campaign.
+- The corrected KernelBench study is a deterministic feasible subset on one
+  Tesla T4, not a random or full L1 sample; only matrix-multiplication tasks
+  produced valid timed candidates.
+- The fused8 benchmark uses one primary `[4096, 1024]` shape regime and should not be read as shape-scaling evidence.
+- Small task sets and one GPU class per campaign; the KernelBench holdout used a
+  Tesla T4 and the separate near-threshold stress test used an RTX A4500.
+- Small rigorous model budgets: 24 generated candidates for Gemini and 24 for OpenAI mini.
 - No Nsight or hardware-counter profiling yet.
+- Historical KernelBench profiler and clock files are debugging artifacts only and are not used as paper evidence.
+- Historical compile-time fields used incomplete accounting or were null; compile-cost amortization is not analyzed.
 - No fine-tuning and no RL.
-- Some numbers are provided-run summaries when the full RunPod artifact is not present in this workspace.
+- API model behavior can change over time.
 - No SOTA claim.
 
-## 13. Next Work
+## 13. Historical KernelBench Adapter Audit
 
-The next technical step is not training immediately. The rigorous internal fused8 deterministic-template results are complete enough to support an external validation pilot. The project now includes a KernelBench L1 adapter and baseline-validation command that can load a local KernelBench-style directory, run PyTorch eager and optional `torch.compile` baselines, and write a pilot report. Candidate generation for KernelBench is intentionally deferred until task loading and baseline timing are validated. No KernelBench performance results are claimed yet.
+The preserved historical artifacts use the official KernelBench checkout at commit `423217d9fda91e0c2d67e4a43bf62f96f6d104f1`. The affected evaluator recorded 3/20 one-shot verifications and 1/8 repair verifications, but these are audit observations only. The old prompt forced all candidates into free functions, violating the official `ModelNew` lifecycle for every task; parameterized tasks additionally could not own initialized state. Reference modules were reconstructed inside timed calls, and 9/20 one-shot sources fail the current strict policy. See `reports/kernelbench_adapter_audit.md` and `reports/tables/kernelbench_historical_policy_reaudit.csv`. The corrected workshop campaign supersedes these rows and reports no above-margin generated-kernel win.
 
 ## 14. Reproducibility Appendix
 

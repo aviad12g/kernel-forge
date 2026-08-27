@@ -156,7 +156,6 @@ def rmsnorm_small_inputs(
 def get_fused_tasks() -> list[KernelTask]:
     """Return the internal fused8 task set."""
 
-    float32 = (torch.float32,)
     return [
         _task(
             "bias_relu",

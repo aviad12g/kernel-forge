@@ -69,11 +69,7 @@ def format_performance_search_report(bundle: dict[str, Any]) -> str:
         )
 
     search_records = [record for record in candidates if record.get("generation_stage") == "performance_search"]
-    speedups = [
-        float((record.get("benchmark_summary") or {}).get("speedup_vs_eager"))
-        for record in search_records
-        if (record.get("benchmark_summary") or {}).get("speedup_vs_eager") is not None
-    ]
+    speedups = _speedup_values(search_records)
     lines.extend(
         [
             "",
@@ -117,12 +113,17 @@ def _by_task(candidates: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]
 
 
 def _best_speedup(records: list[dict[str, Any]]) -> float | None:
-    values = [
-        float((record.get("benchmark_summary") or {}).get("speedup_vs_eager"))
-        for record in records
-        if (record.get("benchmark_summary") or {}).get("speedup_vs_eager") is not None
-    ]
+    values = _speedup_values(records)
     return max(values) if values else None
+
+
+def _speedup_values(records: list[dict[str, Any]]) -> list[float]:
+    values: list[float] = []
+    for record in records:
+        value = (record.get("benchmark_summary") or {}).get("speedup_vs_eager")
+        if value is not None:
+            values.append(float(value))
+    return values
 
 
 def _fmt(value: Any) -> str:

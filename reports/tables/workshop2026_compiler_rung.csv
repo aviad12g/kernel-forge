@@ -1,0 +1,4 @@
+scope,units,compiler_available,above_compile_parity,above_compile_1_02,above_eager_1_02,notes
+selected_task_baselines,48,47,,,,1 torch.compile baseline OOM; no other unavailable baseline
+frozen_valid_task_winners_screening,10,10,1,1,0,"only KernelBench__level1__12_Matmul_with_diagonal_matrices_ cleared compile margin: 1.826464x vs compile, 0.937223x vs eager"
+fresh_process_confirmation,10,0,,,0,confirmation remeasured candidate versus eager only; compiler was not rerun

@@ -1,0 +1,22 @@
+\section{Prompt and Decoding Appendix}
+\begingroup
+\footnotesize
+
+The paper-facing model runs use fixed prompt templates and small candidate budgets. Full prompts, raw responses, extracted candidates, and backend metadata are saved in run artifacts when those artifacts are available.
+
+\paragraph{Fused8 generation.}
+Fused8 model candidates use prompt version \code{v2\_task\_skeletons}. The prompt requires a module-level \code{forward(*args)}, allows only \code{torch}, \code{triton}, and \code{triton.language as tl} imports, includes the task description, dtype, tolerance, benchmark shape, task hints, and PyTorch reference source, and instructs the model not to fake outputs, cache expected tensors, read hidden files, call the reference function, or use plain PyTorch fallback code as the main implementation. The system prompt is: ``You generate concise Python candidate kernels for local verification. Return code that can be imported as a Python module.''
+
+\paragraph{Fused8 settings.}
+Gemini uses model \code{gemini-3.1-flash-lite}, OpenAI-compatible Gemini endpoint, temperature 0.2, top-p 0.95, max tokens 4096, one attempt, and three candidates per task. OpenAI mini uses model \code{gpt-5.4-mini}, OpenAI-compatible chat completions, null temperature/top-p, \code{extra\_body.max\_completion\_tokens = 2048}, one attempt, and three candidates per task. Both disable torch fallback, stop-after-first-correct, repair loops, template guidance, and performance search.
+
+These are configured API strings, not inferred provider revisions. Provider response \code{model} fields are not preserved in the local fused8 artifacts.
+
+\paragraph{KernelBench generation.}
+KernelBench prompts include the task source, benchmark metadata, tolerance, and an explicit candidate contract. The corrected adapter requires \code{ModelNew(torch.nn.Module)} for every official task that defines \code{Model}; \code{ModelNew} receives the same seeded \code{get\_init\_inputs()} snapshot as the reference, and its \code{forward} receives \code{get\_inputs()}. Module-level \code{forward(*args)} candidates are limited to local synthetic tasks with an explicit \code{reference\_fn} interface. The prompt forbids reference/task calls and permits Torch only for allocation, metadata inspection, parameter storage, and Triton launch wrappers. The preserved 20260520 prompts used the older free-function-only contract and are retained verbatim for auditability; they are not presented as the corrected protocol. Gemini settings were temperature 0.2, top-p 0.95, max tokens 4096, and one candidate per task.
+
+KernelBench JSONL records preserve the configured model field \code{gemini-3.1-flash-lite}; they do not preserve a separate provider-returned model-version field.
+
+\paragraph{Repair prompts.}
+The historical repair prompts include the original task source, failed candidate, verification error, traceback summary, failure category, and suggested repair instruction. They prioritize correctness over performance and use one Gemini response per selected task. Because they inherited the obsolete free-function contract, they document prompt provenance rather than a validated repair protocol. Corrected repair prompts must carry the same \code{ModelNew} state contract as corrected one-shot generation.
+\endgroup

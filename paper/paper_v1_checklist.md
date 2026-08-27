@@ -1,0 +1,100 @@
+# Paper V1 Checklist
+
+- [x] Abstract written with the corrected evidence-backed thesis.
+- [x] Abstract leads with concrete fused8 findings and discloses the KernelBench adapter audit.
+- [x] Introduction motivates repeatability-aware evaluation for generated GPU kernels.
+- [x] Methods describe task suite, candidate sources, verification, CUDA-event timing, cache flushing, independent sessions, bootstrap summaries, and `torch.compile max-autotune`.
+- [x] Results include rigorous deterministic template, Gemini, and OpenAI mini fused8 baselines.
+- [x] Limitations separate supported fused8 evidence from provisional historical KernelBench artifacts.
+- [x] No SOTA claim.
+- [x] Historical KernelBench pilot and repair artifacts are retained as an evaluator-audit case study, not supported benchmark evidence.
+- [x] Bibliography entries are present for Triton, PyTorch 2, KernelBench, FlashAttention, CUDA event timing, and LLM-oriented CUDA optimization work.
+- [x] Citation keys are consistent across Markdown, TeX, and BibTeX.
+- [x] Artifact index includes KernelBench pilot, failure taxonomy, repair subset, repair run, and comparison artifacts.
+- [x] Reproducibility guide includes the KernelBench repair workflow.
+- [x] KernelBench feasible-subset selection rule and memory cap are stated.
+- [x] Results explain why generated kernels may beat compile while losing to eager.
+- [x] OpenAI mini verification-rate limitation is stated.
+- [x] `bias_relu` single-run-only flip is visible as a methodology case study.
+- [x] CSV table sources generated under `reports/tables/`.
+- [x] Overleaf-ready project created under `paper/overleaf/`.
+- [x] Table `.tex` assets and publication figures can be regenerated with `scripts/build_paper_assets.py`.
+- [x] References are ordered before the appendix in the Overleaf source, with float barriers around both sections.
+- [x] KernelBench summary table is compact and moves prose takeaways below the table.
+- [x] Unicode/soft-hyphen scan is available through `scripts/check_paper_text_clean.py`.
+- [x] Body tables use compact labels and keep detailed task rows in the appendix.
+- [x] Reproducibility command flow documented in `reports/reproducibility.md`.
+- [x] Repeatability-label definition added with implemented decision rules and examples.
+- [x] Static policy checks table added and tied to implemented AST checks.
+- [x] Cache flushing specified as 128 MB write-based cache-state perturbation, not guaranteed full L2 eviction.
+- [x] Sample counts and independent-session semantics clarified.
+- [x] Hardware/software environment added to methodology, with GPU clock/power/thermal fields marked not recorded.
+- [x] Prompt template and decoding-settings appendix added.
+- [x] Fused8 task shapes, dtypes, and tolerances documented.
+- [x] KernelBench repairability criterion and selected repair subset documented.
+- [x] Methodology documentation consistency check added.
+- [x] Verification-rate Wilson intervals added from existing counts.
+- [x] Candidate-level Fisher comparison removed because candidates are clustered within tasks.
+- [x] Historical KernelBench family summary retained and marked provisional.
+- [x] Single-run/repeat flip frequency computed where preserved and marked missing for full 160-candidate template artifacts.
+- [x] Multiplicity and stable-win count caveats added.
+- [x] Three-session variance caveat added.
+- [x] KernelBench memory-filtering characterization added.
+- [x] KernelBench family-level interpretation added.
+- [x] KernelBench repairability criterion clarified operationally.
+- [x] Historical loss profiler diagnostics excluded from mechanism claims after the reference-lifecycle audit.
+- [x] Qualitative eager-baseline notes added.
+- [x] Compile-time availability documented.
+- [x] CUDA graphs limitation added.
+- [x] Artifact import attempted with manifest and SHA256 checksums under `artifacts/runpod_imports/`.
+- [x] Fused8 uncertainty recovery status documented; missing rigorous fused8 run directories are not inferred.
+- [x] KernelBench profiler diagnostics collected for CE, Triplet, and KLDiv on RunPod Flash and labeled as explanatory only.
+- [x] KernelBench loss-candidate profiler script locates preserved CE, Triplet, and KLDiv candidates and writes operator, memory, and mechanism-status tables.
+- [x] Historical clock-recorded validation retained only as debugging provenance.
+- [x] Fused8 headline clock validation is marked unavailable because the exact rigorous candidate artifacts are not preserved locally.
+- [x] Contribution reframed as evaluation protocol and artifact discipline, not a new generator.
+- [x] Positioning table added for generated-kernel and systems-measurement work.
+- [x] Measurement-reliability related work expanded with systems-methodology citations.
+- [x] Self-Refine repair framing clarified as one capped verifier-feedback pass, not iterative self-refinement.
+- [x] Citation-key checker added and run against the Overleaf source.
+- [x] Example generated-candidate appendix added with one successful and one failed KernelBench candidate.
+- [x] Verifier-error example added to make failure taxonomy concrete.
+- [x] Overleaf package README added.
+- [x] PDF text/order checker added.
+- [x] Two-labeler mapping clarified: imported fused8 summaries use legacy labels, while KernelBench pilot/repair artifacts use the rigorous session labeler.
+- [x] Repeatability thresholds bounded: legacy `CV <= 0.10` and rigorous `tau = 0.98` are documented as fixed defaults, with sensitivity marked not preserved where session vectors are missing.
+- [x] Fused8 single-shape-regime limitation added for the `[4096, 1024]` controlled setting.
+- [x] Model identifier audit added for configured API strings and missing provider-response model fields.
+- [x] Positioning table moved out of the main body and compacted for the appendix.
+- [x] Historical KernelBench Wilson interval moved to audit context and removed from supported-result framing.
+- [x] Copyediting pass fixed duplicated/awkward baseline wording.
+- [x] Optional future fused8 locked-clock sanity check listed for exact imported candidates if the missing rigorous fused8 artifacts become available.
+- [x] Corrected KernelBench `ModelNew` contract and persistent reference lifecycle implemented and CPU-tested.
+- [x] Uniform official `ModelNew` requirement documented and tested for both stateful and empty-state tasks.
+- [x] Current `ast-v5` policy re-audit records historical candidates that now fail strict policy.
+- [x] Main paper excludes historical KernelBench correctness, speedup, profiler, and clock rows from supported claims.
+- [x] Corrected CUDA campaign is fail-closed, commit-pinned, control-gated, and documented.
+- [x] Corrected KernelBench candidate path revalidated on CUDA with frozen screening and fresh-process confirmation.
+- [ ] External reviewer pass for clarity, claim strength, and table readability.
+- [x] Preserve/import all corrected workshop campaign artifacts before public artifact release.
+- [ ] Verify formal venues and final metadata for bibliography entries before public preprint submission.
+- [x] Separate official-style four-page workshop draft added under `paper/workshop2026/`.
+- [x] Holdout protocol, frozen task selection, process-isolated timing, promotion analysis, and evaluator controls are CPU-tested.
+- [x] Reviewer RQ2 concern resolved with a separate all-candidate controlled multiplicity protocol.
+- [x] Aggregate promotion outcomes made primary and exact seven-process policy enforced.
+- [x] Historical lifecycle confound moved to a separate control with host and enclosing-event diagnostics.
+- [x] Campaign-validity gate and non-adaptive temporal wave lock added.
+- [x] Correctness strengthened to five seeds, same-input repeats, exact tree, and alias checks.
+- [x] Contract-Grade Verifier and Correct but Slow added to workshop related work.
+- [x] Workshop draft visually rebuilt at 4/4 main pages with final author metadata.
+- [x] Corrected holdout and controlled multiplicity campaigns executed before the strict workshop build.
+- [x] Calibrated near-threshold multiplicity stress test executed with disjoint calibration, frozen primary candidates, and complete seven-process confirmation.
+- [x] Near-threshold result is bounded to four fused8 tasks and reports the interval containing zero.
+- [x] Same-GPU RTX A4500 easy-grid replication removes the easy-vs-near hardware mismatch without changing the bounded four-task scope.
+- [x] Seven fresh RTX A4500 processes confirm the one frozen compiler-relative winner; primary eager-relative results remain unchanged.
+- [x] Completed workshop PDF visually checked with references before appendix and no clipping or broken tables.
+- [x] Formal title now matches the bounded auditing contribution and null above-eager result.
+- [x] Candidate failure funnel and compiler-relative rung are reported from frozen corrected-campaign records.
+- [x] Practical 2% margin rationale and non-calibration boundary are explicit.
+- [x] Multiplicity plot replaced flat win-rate lines with log optimism and post-hoc task-bootstrap intervals.
+- [x] Separate submission-upload entry point removes the review-draft footer only for an upload artifact.

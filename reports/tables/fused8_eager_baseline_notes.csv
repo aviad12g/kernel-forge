@@ -1,0 +1,4 @@
+task_or_family,likely_eager_path,evidence,confidence,caveat
+elementwise fused8,ATen elementwise kernels and broadcasting paths,"fused8 task definitions use torch.relu, sigmoid, add, and broadcasting",medium,qualitative source inspection only; no profiler traces in local package
+row_sum,ATen reduction kernel,reference uses sum over final dimension,medium,exact kernel path not recorded
+layernorm/rmsnorm,ATen normalization and reduction operations,reference computes mean/variance or RMS over feature dimension,medium,no Nsight or torch.profiler attribution is preserved

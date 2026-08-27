@@ -9,12 +9,29 @@ from typing import Any
 import yaml
 
 
+_ALLOWED_TOP_LEVEL_KEYS = {
+    "tasks",
+    "output_dir",
+    "agent",
+    "verification",
+    "benchmark",
+    "execution",
+    "kernelbench",
+}
+
+
 @dataclass
 class VerificationConfig:
     seeds: list[int] = field(default_factory=lambda: [0, 1])
     dtype: str = "float32"
     device: str = "auto"
     max_shapes_per_task: int = 1
+
+    def __post_init__(self) -> None:
+        if not self.seeds:
+            raise ValueError("verification.seeds must not be empty")
+        if int(self.max_shapes_per_task) <= 0:
+            raise ValueError("verification.max_shapes_per_task must be positive")
 
 
 @dataclass
@@ -23,12 +40,22 @@ class CacheFlushBenchmarkConfig:
     size_mb: int = 128
     mode: str = "write"
 
+    def __post_init__(self) -> None:
+        if int(self.size_mb) <= 0:
+            raise ValueError("benchmark.cache_flush.size_mb must be positive")
+        if self.mode not in {"write", "read_write"}:
+            raise ValueError("benchmark.cache_flush.mode must be 'write' or 'read_write'")
+
 
 @dataclass
 class BootstrapCIConfig:
     enabled: bool = False
     samples: int = 1000
     seed: int = 123
+
+    def __post_init__(self) -> None:
+        if int(self.samples) <= 0:
+            raise ValueError("benchmark.bootstrap_ci.samples must be positive")
 
 
 @dataclass
@@ -53,6 +80,18 @@ class BenchmarkConfig:
             self.cache_flush = CacheFlushBenchmarkConfig(**self.cache_flush)
         if isinstance(self.bootstrap_ci, dict):
             self.bootstrap_ci = BootstrapCIConfig(**self.bootstrap_ci)
+        if self.timing_mode not in {"auto", "wall_clock", "cuda_event"}:
+            raise ValueError("benchmark.timing_mode must be auto, wall_clock, or cuda_event")
+        if int(self.warmup) < 0:
+            raise ValueError("benchmark.warmup must be non-negative")
+        if int(self.repeats) <= 0:
+            raise ValueError("benchmark.repeats must be positive")
+        if int(self.independent_sessions) <= 0:
+            raise ValueError("benchmark.independent_sessions must be positive")
+        if int(self.max_shapes_per_task) <= 0:
+            raise ValueError("benchmark.max_shapes_per_task must be positive")
+        if not 0.0 < float(self.stable_session_threshold) <= 1.0:
+            raise ValueError("benchmark.stable_session_threshold must be in (0, 1]")
 
 
 @dataclass
@@ -115,6 +154,16 @@ class AgentConfig:
             self.performance_search = PerformanceSearchConfig(**self.performance_search)
         if isinstance(self.template_copy, dict):
             self.template_copy = TemplateCopyConfig(**self.template_copy)
+        if int(self.max_attempts) <= 0:
+            raise ValueError("agent.max_attempts must be positive")
+        if int(self.candidates_per_attempt) <= 0:
+            raise ValueError("agent.candidates_per_attempt must be positive")
+        if float(self.timeout_seconds) <= 0:
+            raise ValueError("agent.timeout_seconds must be positive")
+        if self.temperature is not None and float(self.temperature) < 0:
+            raise ValueError("agent.temperature must be non-negative")
+        if self.top_p is not None and not 0.0 < float(self.top_p) <= 1.0:
+            raise ValueError("agent.top_p must be in (0, 1]")
 
 
 @dataclass
@@ -122,6 +171,7 @@ class ExecutionConfig:
     require_cuda: bool = False
     require_triton: bool = False
     require_tiny_triton_kernel: bool = False
+    disabled_reason: str | None = None
 
 
 @dataclass
@@ -135,6 +185,9 @@ class RunConfig:
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "RunConfig":
+        unknown = sorted(set(data).difference(_ALLOWED_TOP_LEVEL_KEYS))
+        if unknown:
+            raise ValueError("Unknown top-level config fields: " + ", ".join(unknown))
         tasks_data = data.get("tasks", cls().tasks)
         if isinstance(tasks_data, dict):
             tasks = list(tasks_data.get("include", []))

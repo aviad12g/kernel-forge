@@ -1,0 +1,109 @@
+study:
+  id: workshop2026_near_threshold_multiplicity_v3
+  purpose: calibrated_near_threshold_selection_multiplicity
+  status: preregistered_pending_gpu_execution
+  design_note: >-
+    The v1 and v2 calibrations were disclosed grid-design pilots and were not
+    advanced to primary screening. The v2 grid yielded at least nine candidates
+    per task inside the preregistered 0.98-1.04 speedup window. The v3 protocol
+    therefore freezes a maximum budget of eight candidates per task before any
+    v3 timing; all earlier calibration remains excluded from primary analysis.
+
+tasks:
+  ids: [bias_relu, residual_add_relu, bias_gelu, rmsnorm_small]
+  shape_regime: [4096, 1024]
+  dtype: float32
+
+candidates:
+  source: deterministic_fused8_templates_with_discarded_triton_copy_work
+  variants_per_task: 20
+  selected_candidates_per_task: 8
+  freeze_pool_before_calibration: true
+  freeze_subset_before_primary_timing: true
+  allowed_manifest_statuses:
+    - FROZEN_BEFORE_ANY_TIMING
+    - FROZEN_AFTER_DISJOINT_CALIBRATION_BEFORE_PRIMARY_TIMING
+  historical_design_prior:
+    protocol: configs/workshop2026_multiplicity_protocol.yaml
+    manifest: artifacts/workshop2026/multiplicity/candidate_manifest.json
+    timing_blocks: artifacts/workshop2026/multiplicity/campaign/all_candidate_timing_blocks.csv
+    phase: confirmation
+  pilot_calibration_design_prior:
+    protocol: configs/workshop2026_near_threshold_multiplicity_v2_protocol.yaml
+    selection_csv: artifacts/workshop2026/near_threshold_multiplicity_v3/design_prior/calibration_selection_v2.csv
+    disposition: grid_design_only_not_advanced_to_primary
+  base_candidates:
+    bias_relu: template_00
+    residual_add_relu: template_14
+    bias_gelu: template_06
+    rmsnorm_small: template_03
+  delay_work_units:
+    bias_relu: [0.820, 0.830, 0.840, 0.850, 0.860, 0.870, 0.880, 0.890, 0.900, 0.910, 0.920, 0.930, 0.940, 0.950, 0.960, 0.970, 0.980, 0.990, 1.000, 1.010]
+    residual_add_relu: [1.820, 1.835, 1.850, 1.865, 1.880, 1.895, 1.910, 1.925, 1.940, 1.955, 1.970, 1.985, 2.000, 2.015, 2.030, 2.045, 2.060, 2.075, 2.090, 2.105]
+    bias_gelu: [3.140, 3.155, 3.170, 3.185, 3.200, 3.215, 3.230, 3.245, 3.260, 3.275, 3.290, 3.305, 3.320, 3.335, 3.350, 3.365, 3.380, 3.395, 3.410, 3.425]
+    rmsnorm_small: [2.320, 2.335, 2.350, 2.365, 2.380, 2.395, 2.410, 2.425, 2.440, 2.455, 2.470, 2.485, 2.500, 2.515, 2.530, 2.545, 2.560, 2.575, 2.590, 2.605]
+  delay_kernel:
+    block_size: 256
+    num_warps: 4
+    semantics: discarded_copy_of_first_tensor_input
+
+correctness:
+  seeds: [1103, 2207, 3301, 4409, 5519]
+  same_input_repeat_executions: 2
+  require_deterministic_repeat: true
+  require_exact_output_tree: true
+  require_alias_contract: true
+
+calibration:
+  fresh_processes: 3
+  process_seed_base: 282001
+  paired_blocks_per_process: 10
+  excluded_from_primary_analysis: true
+  selection_window_speedup: [0.98, 1.04]
+  selection_rule: within_window_then_closest_absolute_log_distance
+  minimum_candidates_in_window_per_task_to_advance: 8
+
+screening:
+  processes: 1
+  process_seed: 291041
+  paired_blocks: 20
+
+confirmation:
+  fresh_processes: 7
+  process_seed_base: 301071
+  paired_blocks_per_process: 20
+  minimum_screen_to_confirmation_minutes: 30
+  timing: cuda_event
+  minimum_interval_ms: 1.5
+  warmup_launches: 30
+  cache_state_perturbation:
+    l2_multiplier: 2.0
+    minimum_size_mb: 32
+    maximum_size_mb: 512
+    mode: read_write
+
+analysis:
+  candidate_budgets: [1, 2, 3, 5, 8]
+  resamples: 4000
+  bootstrap_samples: 4000
+  seed: 272091
+  practical_speedup_margin: 0.02
+  confirmation_estimate: median_of_process_block_medians
+  all_selected_candidates_require_independent_confirmation: true
+  primary_outcomes: [apparent_win_rate, confirmed_win_rate, selection_optimism]
+
+environment:
+  precision:
+    allow_tf32_matmul: true
+    allow_tf32_cudnn: true
+    float32_matmul_precision: high
+
+budget:
+  maximum_recorded_gpu_worker_hours: 4.7
+  stop_before_starting_job_if_cap_reached: true
+
+artifacts:
+  candidate_pool_manifest: artifacts/workshop2026/near_threshold_multiplicity_v3/candidate_pool_manifest.json
+  selected_manifest: artifacts/workshop2026/near_threshold_multiplicity_v3/selected_candidate_manifest.json
+  output_dir: artifacts/workshop2026/near_threshold_multiplicity_v3/campaign
+  write_sha256_manifest: true

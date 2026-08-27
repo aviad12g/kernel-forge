@@ -1,0 +1,14 @@
+\begin{table}[htbp]
+\centering
+\caption{Measurement protocol. The KernelBench row describes the affected historical run and is retained only for evaluator auditing.}
+\label{tab:protocol}
+\small
+\begin{tabularx}{\linewidth}{l l c c l X}
+\toprule
+Study & Timing & Samples $\times$ sessions & Cache & Baseline & Source \\
+\midrule
+fused8 & CUDA events & 120 x 3 & 128 MB & compile & template; Gemini; OpenAI mini \\
+Historical KB & CUDA events & 100/120 x 3 same-process loops & 128 MB & compile & affected artifacts \\
+\bottomrule
+\end{tabularx}
+\end{table}

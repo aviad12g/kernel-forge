@@ -25,7 +25,7 @@ _CODE_START_RE = re.compile(r"^\s*(import\s+|from\s+|def\s+|class\s+|@)")
 
 
 def extract_python_code(response: str) -> CodeExtractionResult:
-    """Extract a valid Python candidate exposing ``forward`` from a response.
+    """Extract a valid Python candidate exposing ``forward`` or ``ModelNew``.
 
     The extractor accepts raw Python, fenced Markdown blocks, and responses with
     short explanation before or after the code. It returns an error instead of
@@ -125,4 +125,14 @@ def _has_forward_function(code: str) -> bool:
         tree = ast.parse(code)
     except SyntaxError:
         return False
-    return any(isinstance(node, ast.FunctionDef) and node.name == "forward" for node in tree.body)
+    for node in tree.body:
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name == "forward":
+            return True
+        if isinstance(node, ast.ClassDef) and node.name == "ModelNew":
+            if any(
+                isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef))
+                and child.name == "forward"
+                for child in node.body
+            ):
+                return True
+    return False

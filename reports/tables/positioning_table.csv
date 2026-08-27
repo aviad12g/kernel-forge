@@ -1,0 +1,8 @@
+work_or_area,primary_goal,scale,measurement_focus,relation_to_openkernelforge
+KernelBench,benchmark LLM kernel-generation ability,broad benchmark suite,correctness and speed across generated kernels,OpenKernelForge uses a capped feasible-subset pilot and focuses on repeatability-aware evaluation
+CUDA-L1,improve CUDA optimization with feedback and learning,model/system study,generated CUDA optimization quality,OpenKernelForge does not train a model; it records verifier feedback and one capped repair pass as evaluation artifacts
+Triton / GPU DSLs,express and compile optimized GPU kernels,compiler and programming system,kernel implementation substrate,Triton is the target language for candidates rather than the paper contribution
+PyTorch 2 / TorchInductor,compile tensor programs from Python,production compiler stack,compiler-generated baseline performance,OpenKernelForge treats compile max-autotune as a practical baseline separate from eager
+Systems measurement methodology,avoid biased or noisy performance conclusions,general systems research,repeatability and statistical validity,OpenKernelForge applies this discipline to generated Triton-kernel claims
+Verifier-guided repair / Self-Refine-style feedback,improve generated outputs using feedback,feedback and repair loop,correctness recovery under bounded attempts,OpenKernelForge uses one verifier-feedback repair pass and reports it separately from one-shot generation
+OpenKernelForge,evaluate generated-kernel claims with preserved artifacts,controlled fused8 plus capped KernelBench pilot,correctness compiler/eager speed and repeat-stable labels,evaluation protocol and artifact discipline rather than a new generator

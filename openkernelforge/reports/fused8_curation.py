@@ -46,7 +46,7 @@ def curate_fused8_dataset(
     runs = _load_named_runs(template_run, gemini_run, template_guided_run)
     out_path = Path(out_dir)
     out_path.mkdir(parents=True, exist_ok=True)
-    rows = {filename: [] for filename in CURATED_FILES}
+    rows: dict[str, list[dict[str, Any]]] = {filename: [] for filename in CURATED_FILES}
     all_candidate_rows: list[dict[str, Any]] = []
 
     for label, data in runs.items():
@@ -699,18 +699,18 @@ def _run_summary(bundle: dict[str, Any]) -> dict[str, Any]:
         if (record.get("benchmark_summary") or {}).get("speedup_vs_eager") is not None
     ]
     speedups = [float((record.get("benchmark_summary") or {})["speedup_vs_eager"]) for record in records]
-    compile_speedups = [
-        float((record.get("benchmark_summary") or {}).get("speedup_vs_torch_compile"))
-        for record in records
-        if (record.get("benchmark_summary") or {}).get("speedup_vs_torch_compile") is not None
-    ]
+    compile_speedups: list[float] = []
+    for record in records:
+        value = (record.get("benchmark_summary") or {}).get("speedup_vs_torch_compile")
+        if value is not None:
+            compile_speedups.append(float(value))
     by_task = _best_records_by_task(records)
     return {
         "candidates": len(records),
         "verified": sum(1 for record in records if record.get("verification_passed")),
         "median_speedup": median(speedups) if speedups else None,
         "median_compile_speedup": median(compile_speedups) if compile_speedups else None,
-        "tasks_gt_eager": sum(1 for record in by_task.values() if float((record.get("benchmark_summary") or {}).get("speedup_vs_eager", 0.0)) >= 1.0),
+        "tasks_gt_eager": sum(1 for record in by_task.values() if float((record.get("benchmark_summary") or {}).get("speedup_vs_eager") or 0.0) >= 1.0),
         "tasks_gt_compile": sum(1 for record in by_task.values() if float((record.get("benchmark_summary") or {}).get("speedup_vs_torch_compile", 0.0) or 0.0) >= 1.0),
     }
 
@@ -729,8 +729,11 @@ def _gemini_competitive_tasks(best_rows: dict[tuple[str, str], dict[str, Any]]) 
     tasks: list[str] = []
     for task_id in FUSED8_TASKS:
         template = best_rows.get((task_id, "template"))
-        geminis = [best_rows.get((task_id, "gemini")), best_rows.get((task_id, "gemini_template_guided"))]
-        geminis = [row for row in geminis if row]
+        geminis = [
+            row
+            for source in ("gemini", "gemini_template_guided")
+            if (row := best_rows.get((task_id, source))) is not None
+        ]
         if not template or not geminis:
             continue
         best_gemini = max(geminis, key=_effective_speedup)
@@ -743,8 +746,11 @@ def _template_dominated_tasks(best_rows: dict[tuple[str, str], dict[str, Any]]) 
     tasks: list[str] = []
     for task_id in FUSED8_TASKS:
         template = best_rows.get((task_id, "template"))
-        geminis = [best_rows.get((task_id, "gemini")), best_rows.get((task_id, "gemini_template_guided"))]
-        geminis = [row for row in geminis if row]
+        geminis = [
+            row
+            for source in ("gemini", "gemini_template_guided")
+            if (row := best_rows.get((task_id, source))) is not None
+        ]
         if not template or not geminis:
             continue
         best_gemini = max(geminis, key=_effective_speedup)

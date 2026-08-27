@@ -1,0 +1,3 @@
+study,timing,repeats,sessions,cache_flush,compiler_baseline,candidate_source
+fused8 template/model study,CUDA events,120,3,128 MB write,compile max-autotune,"template, Gemini, OpenAI mini"
+Historical KernelBench L1 adapter output,CUDA events,100/120,3 same-process loops,128 MB write,compile max-autotune,affected one-shot plus repair artifacts

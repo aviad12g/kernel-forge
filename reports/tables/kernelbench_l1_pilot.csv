@@ -1,0 +1,5 @@
+stage,tasks_or_candidates,verified,benchmarked,stable_speedups,uncertainty,main_conclusion,evidence_status
+baseline validation,20 selected tasks,20 eager / 20 compile timed,20,not applicable,not applicable,historical timing is provisional after adapter audit,historical_adapter_output_only
+one-shot Gemini,20 candidates,3/20,3,CE 1.992x [IQR 0.0022]; Triplet 4.176x [IQR 0.0005],historical interval fields preserved,affected evaluator output; not model accuracy,historical_adapter_output_only
+repair1,8 selected repairs,1/8,1,KLDiv 1.843x [IQR 0.0003],historical interval fields preserved,affected evaluator output; not repair evidence,historical_adapter_output_only
+combined after repair,20 tasks + 8 repairs,4 unique tasks,4,3 recorded labels,see rows above,superseded by corrected 48-task workshop campaign,historical_adapter_output_only

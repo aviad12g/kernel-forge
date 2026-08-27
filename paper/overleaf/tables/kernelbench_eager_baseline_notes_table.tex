@@ -1,0 +1,16 @@
+\begin{table}[htbp]
+\centering
+\caption{Historical KernelBench eager-path notes. They are qualitative and do not rehabilitate the affected timing comparisons.}
+\label{tab:kernelbench-eager-notes}
+\scriptsize
+\begin{tabularx}{\linewidth}{l X l X}
+\toprule
+Family & Likely eager path & Conf. & Caveat \\
+\midrule
+loss & torch.nn.functional loss functions and reductions & source-level only & affected reference lifecycle prevents performance attribution \\
+matmul & ATen matmul/elementwise paths, often backed by cuBLAS for dense matmul tasks & medium & diagonal/triangular variants may use elementwise or masking paths rather than plain GEMM \\
+convolution & torch.nn convolution modules, typically ATen/cuDNN CUDA kernels & medium & exact backend algorithm not measured \\
+pooling & torch.nn pooling modules using ATen CUDA pooling kernels & medium & exact kernel path not measured \\
+\bottomrule
+\end{tabularx}
+\end{table}

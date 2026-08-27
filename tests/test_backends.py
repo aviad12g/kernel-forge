@@ -3,6 +3,7 @@ import pytest
 import openkernelforge.agents.backends as backends_module
 from openkernelforge.agents.backends import (
     FakeBackend,
+    LocalCommandBackend,
     OpenAICompatibleBackend,
     create_backend,
 )
@@ -29,10 +30,11 @@ def test_fake_backend_can_return_broken_then_fixed_output():
 
 
 class _FakeResponse:
-    def __init__(self, status_code=200, payload=None, text=""):
+    def __init__(self, status_code=200, payload=None, text="", headers=None):
         self.status_code = status_code
         self._payload = payload
         self.text = text
+        self.headers = headers or {}
 
     def json(self):
         if isinstance(self._payload, Exception):
@@ -61,7 +63,13 @@ def test_openai_compatible_backend_parses_valid_response(monkeypatch):
         captured["headers"] = headers
         captured["timeout"] = timeout
         return _FakeResponse(
-            payload={"choices": [{"message": {"content": "def forward(x):\n    return x\n"}}]}
+            payload={
+                "id": "response-1",
+                "model": "provider-model-version",
+                "usage": {"total_tokens": 12},
+                "choices": [{"message": {"content": "def forward(x):\n    return x\n"}}],
+            },
+            headers={"x-request-id": "request-1"},
         )
 
     monkeypatch.setattr(backends_module, "_load_requests", lambda: _FakeRequests(fake_post))
@@ -83,6 +91,9 @@ def test_openai_compatible_backend_parses_valid_response(monkeypatch):
     assert captured["json"]["max_tokens"] == 128
     assert captured["headers"]["Authorization"] == "Bearer secret-value"
     assert captured["timeout"] == 3
+    assert backend.last_response_metadata["configured_model"] == "local-model"
+    assert backend.last_response_metadata["provider_response_model"] == "provider-model-version"
+    assert backend.last_response_metadata["request_id"] == "request-1"
 
 
 def test_openai_compatible_backend_handles_non_200(monkeypatch):
@@ -114,6 +125,17 @@ def test_openai_compatible_backend_handles_empty_and_malformed_response(monkeypa
 def test_backend_factory_creates_fake_backend():
     backend = create_backend(AgentConfig(type="llm", backend="fake", fake_mode="correct"))
     assert isinstance(backend, FakeBackend)
+
+
+def test_local_command_backend_enforces_timeout(monkeypatch):
+    def timeout(*args, **kwargs):
+        raise backends_module.subprocess.TimeoutExpired(cmd=["backend"], timeout=3)
+
+    monkeypatch.setattr(backends_module.subprocess, "run", timeout)
+    backend = LocalCommandBackend(command=["backend"], timeout_seconds=3)
+
+    with pytest.raises(RuntimeError, match="timed out after 3 seconds"):
+        backend.generate("prompt")
 
 
 def test_backend_factory_creates_openai_compatible_backend():

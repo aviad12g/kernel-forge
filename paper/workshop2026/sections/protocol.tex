@@ -1,0 +1,62 @@
+\section{Contract-aware holdout confirmation}
+
+\paragraph{Lifecycle and correctness.}
+Official KernelBench tasks define a reference \code{Model} and expect a
+persistent \code{ModelNew}. We instantiate both from the same frozen constructor
+arguments with restored RNG state and move them to the GPU before warmup. Source,
+initialization, and before/after state hashes preserve provenance. Candidates
+must pass static policy, five seeded input generations, repeated execution,
+output-tree, alias, input-effect, special-value, shape, dtype, and official
+tolerance checks. A pre-timing \code{TorchDispatchMode} audit rejects high-level
+ATen compute and requires an observed Triton launch. These checks are contract
+guardrails, not a security sandbox.
+
+\paragraph{Performance-blind selection.}
+The study uses official KernelBench L1 commit \code{423217d9}. Before candidate
+generation, memory preflight selected 48 tasks by deterministic
+family-round-robin with lexical within-family order and an 8~GiB known-residency
+cap. The original target of 50 was amended before manifest freeze: 49 of 100
+tasks met the unchanged cap, the next tier began at 20~GiB, and one feasible
+task was reserved for the excluded-task shakedown. No candidate or timing field
+informed the amendment.
+
+\paragraph{Screening and confirmation.}
+For task $t$, candidate $c$, process $r$, and paired block $b$, define
+\begin{equation}
+z_{tcrb}=\log\!\left(\widetilde T^{\mathrm{eager}}_{trb}/
+\widetilde T^{c}_{tcrb}\right),
+\end{equation}
+where each $\widetilde T$ is per-launch CUDA-event latency on the same input
+snapshot. Twenty randomized paired blocks screen three candidates per task in
+one process. We freeze the candidate with the largest median $z$; tasks with no
+valid candidate remain explicit \textsc{invalid} rows. The winner then receives
+20 blocks in each of seven fresh processes with new seeds. Processes are split
+into separately invoked waves of four and three, separated by at least 30
+minutes on the same GPU and software fingerprint. Each interval adapts its
+launch count to at least 1.5 ms; method order is randomized and cache state is
+perturbed identically with a read-write buffer sized from reported L2 capacity.
+Compile cost is separated from runtime, and promotion is paired against eager.
+
+The practical margin is $\delta=0.02$. This fixed protocol default was chosen
+before timing to require a nontrivial practical gain rather than parity; it was
+not calibrated post hoc to the observed T4 noise. Primary outcomes are valid-task,
+screening-win, and confirmed-win counts; false-promotion fraction; and median
+screening-to-confirmation optimism with a task-bootstrap interval. A secondary
+process-cluster analysis uses a one-sided lower bound, centered bootstrap test,
+and Benjamini--Hochberg correction. Exact seeds, resampling rules, telemetry,
+precision settings, and failure behavior are fixed in the executable protocol
+and summarized in the appendix.
+
+\paragraph{Controls and multiplicity.}
+Seven-process calibration compares eager with an identical wrapper and a
+calibrated extra-work wrapper. A separate 24-process lifecycle ablation measures
+reference reconstruction and transfer with synchronized host latency and an
+enclosing CUDA-event diagnostic. Missing or failed controls block performance
+claims. RQ2 uses two deterministic fused8 regimes. An easy grid freezes and
+confirms 20 candidates per task for $K\leq20$. A separate stress test freezes
+20 delayed variants per task, uses three disjoint calibration processes to
+select eight variants within a predeclared $[0.98,1.04]$ speedup window, then
+excludes calibration and screens and confirms all 32 selected candidates. Its
+seven confirmation processes begin at least 30 minutes after screening, and
+4,000 resamples estimate budgets $K\in\{1,2,3,5,8\}$. The two regimes use
+separate artifacts and GPUs and are not inferred from the KernelBench pool.

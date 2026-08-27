@@ -1,0 +1,58 @@
+\section{Introduction}
+
+LLM-based systems can generate many plausible GPU kernels for one tensor
+program. The system then selects a candidate using measured latency. This makes
+evaluation part of the search algorithm: as the candidate budget grows, so does
+the chance of selecting a favorable timing fluctuation. Reusing that measurement
+as final evidence produces a systems analogue of test-set overfitting. A second
+risk comes from the evaluator itself. Incorrect state initialization, model
+construction inside timed regions, or permissive fallback paths can create a
+large apparent speedup without a better kernel.
+
+Existing kernel benchmarks emphasize correctness and performance over practical
+baselines~\citep{kernelbench2025,zhang2026kernelbenchverified,lange2025robustkbench},
+while recent harness work stresses constrained execution and artifact
+archival~\citep{shui2026harness}. Systems measurement research has separately
+shown that small experimental choices can reverse performance
+conclusions~\citep{mytkowicz2009wrongdata,curtsinger2013stabilizer}. We connect
+these concerns through a promotion protocol for generated kernels. The protocol
+uses one dataset to screen candidates and fresh process-level data to confirm a
+frozen winner.
+
+We ask three questions with separate evidence paths. \textbf{RQ1:
+repeatability.} Across a corrected KernelBench subset, how many valid tasks,
+screening wins, and independently confirmed wins remain under a fixed
+three-candidate budget? \textbf{RQ2: selection bias.} Across an easy
+deterministic grid and a calibrated near-threshold fused8 stress test, how do
+apparent and independently confirmed wins change with candidate budget?
+\textbf{RQ3: evaluator validity.} In a
+separate disposable-process ablation, how much apparent speedup is created by
+reconstructing and transferring a reference model inside the measured call?
+
+The contribution is an evaluation design rather than a generation model:
+\begin{itemize}
+  \item a contract-valid persistent lifecycle for official \code{ModelNew}
+  tasks, with frozen initialization provenance and source hashes;
+  \item a screen-then-confirm protocol using randomized paired blocks across
+  fresh processes and a practical-margin promotion test;
+  \item fail-closed null, known-slowdown, and lifecycle controls that must pass
+  before candidate screening; and
+  \item an artifact ledger that preserves the evidence needed to audit both a
+  candidate and the evaluator that promoted it.
+\end{itemize}
+
+The claim ladder is deliberately strict:
+\[
+\text{contract-valid and correct}
+\;\rightarrow\; \text{beats compiler}
+\;\rightarrow\; \text{beats eager}
+\;\rightarrow\; \text{independently confirmed}.
+\]
+Each arrow is a separate empirical claim.
+
+Recent verifier studies show that kernel correctness requires more than a
+single numerical comparison~\citep{shah2026contractgrade,li2026correctslow}.
+Accordingly, our protocol treats correctness, output contracts, lifecycle
+validity, and performance as distinct gates. The historical fused8 example is
+motivating evidence only. The corrected campaign reported here passed its
+prespecified control gates and is derived from checksummed raw artifacts.

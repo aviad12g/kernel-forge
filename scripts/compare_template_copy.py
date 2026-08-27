@@ -112,7 +112,6 @@ def _format(*summaries: dict[str, Any]) -> str:
     sep = "| --- | " + " | ".join("---:" for _ in summaries) + " | ---: |"
     lines.extend([header, sep])
     template_best = summaries[0]["best_by_task"]
-    copy_best = summaries[-1]["best_by_task"]
     for task in tasks:
         values = [summary["best_by_task"].get(task, {}) for summary in summaries]
         copy_gap = None

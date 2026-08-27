@@ -1,0 +1,18 @@
+\begin{table}[htbp]
+\centering
+\caption{Family-level output from the affected historical KernelBench evaluator. The apparent loss-family concentration is diagnostic and not a corrected-adapter accuracy estimate.}
+\label{tab:kernelbench-family-summary}
+\scriptsize
+\begin{tabularx}{\linewidth}{l r r r r r r r}
+\toprule
+Family & Sel. & 1-shot ok & 1-shot stable & Repair tried & Repair ok & Combined ok & Combined stable \\
+\midrule
+convolution & 7 & 0 & 0 & 0 & 0 & 0 & 0 \\
+matmul & 7 & 1 & 0 & 6 & 0 & 1 & 0 \\
+pooling & 3 & 0 & 0 & 1 & 0 & 0 & 0 \\
+loss & 3 & 2 & 2 & 1 & 1 & 3 & 3 \\
+\midrule
+\multicolumn{8}{p{0.92\linewidth}}{Memory-cap skips encountered before the 20-task cap: activation 7; kernelbench\_l1 6; loss 3; normalization 6; pooling 3; reduction 6. The selector takes the first feasible tasks in deterministic family-round-robin order; it is not random and does not scan the remaining pool after reaching the cap.} \\
+\bottomrule
+\end{tabularx}
+\end{table}

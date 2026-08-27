@@ -1,0 +1,7 @@
+study,unit,total,valid,screening_wins,confirmed_wins,practical_margin,key_estimate,interval_or_note,artifact_source
+holdout,selected_tasks,48,10,0,0,0.02,1.0136561347 screening_to_confirmation_ratio,"task-bootstrap 95% interval [0.9150815074,1.1703959517]",artifacts/workshop2026/holdout_campaign/analysis/aggregate_promotion_summary.json
+holdout,evaluated_candidates,141,27,,,0.02,27 passed full gate,"144 generated; one task's three candidates were not evaluated after compiler-baseline OOM",artifacts/workshop2026/holdout_campaign/screening
+multiplicity,fused8_tasks,4,4,4,4,0.02,"apparent=1.0; confirmed=1.0","all K in {1,2,3,5,10,20}; near-zero median log optimism",artifacts/workshop2026/multiplicity/campaign/selection_multiplicity.csv
+near_threshold_multiplicity,fused8_tasks,4,4,3,2,0.02,"K=8 apparent=0.75; confirmed=0.50","median log optimism 0.007248; four-task 95% interval [-0.012395,0.026614]",artifacts/workshop2026/near_threshold_multiplicity_v3/campaign/selection_multiplicity.csv
+lifecycle,process_rows,24,24,,,0.02,"host=1.0532271514; enclosing_event=1.0000973185",isolated reconstruct-per-call control,artifacts/workshop2026/lifecycle_ablation/lifecycle_ablation_summary.json
+calibration,processes,7,7,,,0.02,"null=0.9999981048; slowdown=0.9466868281",campaign gate PASS,artifacts/workshop2026/evaluator_controls/calibration_validity.json

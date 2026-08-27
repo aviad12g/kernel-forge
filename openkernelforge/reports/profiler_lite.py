@@ -59,7 +59,7 @@ def format_profiler_lite_report(bundle: dict[str, Any]) -> str:
     for task_id, records in sorted(by_task.items()):
         speedups = _speedups(records)
         medians = _candidate_medians(records)
-        best = max(speedups) if speedups else None
+        best_speedup = max(speedups) if speedups else None
         med = median(speedups) if speedups else None
         spread = (max(medians) - min(medians)) if len(medians) >= 2 else None
         lines.extend(
@@ -67,7 +67,7 @@ def format_profiler_lite_report(bundle: dict[str, Any]) -> str:
                 f"### {task_id}",
                 "",
                 f"- Candidate count: {len(records)}",
-                f"- Best speedup vs eager: {_fmt_speedup(best)}",
+                f"- Best speedup vs eager: {_fmt_speedup(best_speedup)}",
                 f"- Median speedup vs eager: {_fmt_speedup(med)}",
                 f"- Runtime spread between slowest and fastest correct candidate: {_fmt_ms(spread)}",
                 "",
@@ -195,11 +195,12 @@ def _candidate_medians(records: list[dict[str, Any]]) -> list[float]:
 
 
 def _speedups(records: list[dict[str, Any]]) -> list[float]:
-    return [
-        float((record.get("benchmark_summary") or {}).get("speedup_vs_eager"))
-        for record in records
-        if (record.get("benchmark_summary") or {}).get("speedup_vs_eager") is not None
-    ]
+    values: list[float] = []
+    for record in records:
+        value = (record.get("benchmark_summary") or {}).get("speedup_vs_eager")
+        if value is not None:
+            values.append(float(value))
+    return values
 
 
 def _static_flags(source: str, task_id: str) -> dict[str, Any]:

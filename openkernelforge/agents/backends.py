@@ -35,8 +35,14 @@ class FakeBackend:
     fenced: bool = True
     calls: list[dict[str, object]] = field(default_factory=list)
     _task_counts: dict[str, int] = field(default_factory=dict)
+    last_response_metadata: dict[str, object] = field(default_factory=dict, init=False)
 
     def generate(self, prompt: str, *, system: str | None = None, **kwargs) -> str:
+        self.last_response_metadata = {
+            "backend": "fake",
+            "model": "fake-deterministic",
+            "provider_response_model": "fake-deterministic",
+        }
         if "Return the word OK" in prompt:
             self.calls.append(
                 {
@@ -78,18 +84,25 @@ class LocalCommandBackend:
     """Backend that delegates generation to a local command over stdin/stdout."""
 
     command: list[str]
+    timeout_seconds: float = 120.0
 
     def generate(self, prompt: str, *, system: str | None = None, **kwargs) -> str:
         if not self.command:
             raise RuntimeError("LocalCommandBackend requires a non-empty command")
         payload = json.dumps({"prompt": prompt, "system": system, "kwargs": kwargs})
-        completed = subprocess.run(
-            self.command,
-            input=payload,
-            text=True,
-            capture_output=True,
-            check=False,
-        )
+        try:
+            completed = subprocess.run(
+                self.command,
+                input=payload,
+                text=True,
+                capture_output=True,
+                check=False,
+                timeout=self.timeout_seconds,
+            )
+        except subprocess.TimeoutExpired as exc:
+            raise RuntimeError(
+                f"Local command backend timed out after {self.timeout_seconds} seconds"
+            ) from exc
         if completed.returncode != 0:
             raise RuntimeError(
                 "Local command backend failed with exit code "
@@ -112,6 +125,7 @@ class OpenAICompatibleBackend:
     timeout_seconds: float = 120.0
     extra_headers: dict[str, str] = field(default_factory=dict)
     extra_body: dict[str, object] = field(default_factory=dict)
+    last_response_metadata: dict[str, object] = field(default_factory=dict, init=False)
 
     def generate(self, prompt: str, *, system: str | None = None, **kwargs) -> str:
         requests = _load_requests()
@@ -162,6 +176,13 @@ class OpenAICompatibleBackend:
         content = _extract_chat_content(data)
         if not content.strip():
             raise RuntimeError("OpenAI-compatible backend returned empty assistant content")
+        self.last_response_metadata = _response_metadata(
+            data,
+            configured_model=self.model,
+            backend="openai_compatible",
+            endpoint=url,
+            response=response,
+        )
         return content
 
 
@@ -179,6 +200,7 @@ class OpenAIResponsesBackend:
     timeout_seconds: float = 120.0
     extra_headers: dict[str, str] = field(default_factory=dict)
     extra_body: dict[str, object] = field(default_factory=dict)
+    last_response_metadata: dict[str, object] = field(default_factory=dict, init=False)
 
     def generate(self, prompt: str, *, system: str | None = None, **kwargs) -> str:
         requests = _load_requests()
@@ -231,6 +253,13 @@ class OpenAIResponsesBackend:
         content = _extract_responses_content(data)
         if not content.strip():
             raise RuntimeError("OpenAI Responses backend returned empty output text")
+        self.last_response_metadata = _response_metadata(
+            data,
+            configured_model=self.model,
+            backend="openai_responses",
+            endpoint=url,
+            response=response,
+        )
         return content
 
 
@@ -278,7 +307,10 @@ def create_backend(
             command_list = [str(part) for part in command]
         else:
             raise RuntimeError("LocalCommandBackend requires backend_options.command")
-        return LocalCommandBackend(command=command_list)
+        return LocalCommandBackend(
+            command=command_list,
+            timeout_seconds=_float_option(opts, "timeout_seconds", 120.0),
+        )
     if normalized in {"openai-responses", "responses"}:
         model = opts.get("model")
         if not model:
@@ -291,9 +323,9 @@ def create_backend(
             temperature=_optional_float(opts.get("temperature")),
             top_p=_optional_float(opts.get("top_p")),
             max_tokens=_optional_int(opts.get("max_tokens")),
-            timeout_seconds=float(opts.get("timeout_seconds", 120.0)),
+            timeout_seconds=_float_option(opts, "timeout_seconds", 120.0),
             extra_headers=_str_dict(opts.get("extra_headers")),
-            extra_body=dict(opts.get("extra_body") or {}),
+            extra_body=_object_dict(opts.get("extra_body"), field_name="extra_body"),
         )
     if normalized in {"openai-compatible", "openai"}:
         base_url = opts.get("base_url")
@@ -310,9 +342,9 @@ def create_backend(
             temperature=_optional_float(opts.get("temperature")),
             top_p=_optional_float(opts.get("top_p")),
             max_tokens=_optional_int(opts.get("max_tokens")),
-            timeout_seconds=float(opts.get("timeout_seconds", 120.0)),
+            timeout_seconds=_float_option(opts, "timeout_seconds", 120.0),
             extra_headers=_str_dict(opts.get("extra_headers")),
-            extra_body=dict(opts.get("extra_body") or {}),
+            extra_body=_object_dict(opts.get("extra_body"), field_name="extra_body"),
         )
     if normalized == "transformers":
         model_name_or_path = opts.get("model_name_or_path")
@@ -408,6 +440,34 @@ def _set_if_not_none(body: dict[str, object], key: str, value: object) -> None:
         body[key] = value
 
 
+def _response_metadata(
+    data: object,
+    *,
+    configured_model: str,
+    backend: str,
+    endpoint: str,
+    response: object,
+) -> dict[str, object]:
+    payload = data if isinstance(data, dict) else {}
+    metadata: dict[str, object] = {
+        "backend": backend,
+        "configured_model": configured_model,
+        "provider_response_model": payload.get("model") or "not_returned",
+        "response_id": payload.get("id"),
+        "created": payload.get("created"),
+        "object": payload.get("object"),
+        "system_fingerprint": payload.get("system_fingerprint"),
+        "usage": payload.get("usage"),
+        "endpoint": endpoint,
+    }
+    headers = getattr(response, "headers", None)
+    if headers is not None:
+        request_id = headers.get("x-request-id") or headers.get("request-id")
+        if request_id:
+            metadata["request_id"] = str(request_id)
+    return metadata
+
+
 def _truncate(value: str, limit: int) -> str:
     if len(value) <= limit:
         return value
@@ -424,12 +484,16 @@ def _optional_str(value: object) -> str | None:
 def _optional_float(value: object) -> float | None:
     if value is None:
         return None
+    if not isinstance(value, (str, int, float)):
+        raise TypeError(f"Expected a numeric value, got {type(value).__name__}")
     return float(value)
 
 
 def _optional_int(value: object) -> int | None:
     if value is None:
         return None
+    if not isinstance(value, (str, int)):
+        raise TypeError(f"Expected an integer value, got {type(value).__name__}")
     return int(value)
 
 
@@ -439,6 +503,19 @@ def _str_dict(value: object) -> dict[str, str]:
     if not isinstance(value, dict):
         raise RuntimeError("extra_headers must be a mapping")
     return {str(key): str(item) for key, item in value.items()}
+
+
+def _object_dict(value: object, *, field_name: str) -> dict[str, object]:
+    if value is None:
+        return {}
+    if not isinstance(value, dict):
+        raise TypeError(f"{field_name} must be a mapping")
+    return {str(key): item for key, item in value.items()}
+
+
+def _float_option(options: dict[str, object], key: str, default: float) -> float:
+    value = _optional_float(options.get(key))
+    return default if value is None else value
 
 
 def _extract_task_id(prompt: str) -> str:
