@@ -21,21 +21,22 @@
 \usepackage{tabularx}
 \usepackage{url}
 \usepackage{hyperref}
+\definecolor{okfnavy}{HTML}{244A63}
 \hypersetup{
   colorlinks=true,
   linkcolor=black,
-  citecolor=blue!45!black,
-  urlcolor=blue!45!black,
-  pdftitle={Auditing LLM-Generated GPU Kernel Claims with Contract-Aware Holdout Re-Evaluation},
+  citecolor=black,
+  urlcolor=okfnavy,
+  pdftitle={Auditing Speedup Claims for GPU Kernels from Language Models},
   pdfauthor={Aviad Cohen}
 }
 
 \graphicspath{{figures/}}
 \newcommand{\code}[1]{\texttt{#1}}
-\newcommand{\system}{OpenKernelForge}
+\newcommand{\system}{\mbox{OpenKernelForge}}
 \newcolumntype{Y}{>{\raggedright\arraybackslash}X}
 
-\title{Auditing LLM-Generated GPU Kernel Claims with Contract-Aware Holdout Re-Evaluation}
+\title{Auditing Speedup Claims for GPU Kernels from Language Models}
 \author{Aviad Cohen\\Independent Researcher}
 
 \begin{document}
@@ -51,6 +52,7 @@
 \input{sections/discussion}
 
 \label{mainmatterend}
+\clearpage
 \bibliographystyle{plainnat}
 \bibliography{references}
 

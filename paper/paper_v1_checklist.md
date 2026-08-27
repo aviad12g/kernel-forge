@@ -77,7 +77,7 @@
 - [x] Corrected KernelBench candidate path revalidated on CUDA with frozen screening and fresh-process confirmation.
 - [ ] External reviewer pass for clarity, claim strength, and table readability.
 - [x] Preserve/import all corrected workshop campaign artifacts before public artifact release.
-- [ ] Verify formal venues and final metadata for bibliography entries before public preprint submission.
+- [x] Workshop bibliography audited against primary ACM, arXiv, and NVIDIA records; all cited keys resolve.
 - [x] Separate official-style four-page workshop draft added under `paper/workshop2026/`.
 - [x] Holdout protocol, frozen task selection, process-isolated timing, promotion analysis, and evaluator controls are CPU-tested.
 - [x] Reviewer RQ2 concern resolved with a separate all-candidate controlled multiplicity protocol.
@@ -104,3 +104,6 @@
 - [x] Lifecycle uncertainty regenerated from preserved process rows and reported as IQR plus task-cluster bootstrap intervals.
 - [x] Near-threshold delayed variants defined precisely from the implemented output-preserving scratch-copy mechanism.
 - [x] Exact upload PDF passes text-layer checks.
+- [x] Final editorial pass removes report-style prose, long sentence chains, and repeated claim disclaimers.
+- [x] Primary evidence table and three-panel figure redesigned for rapid review at normal page scale.
+- [x] References begin on a dedicated page and the complete appendix fits on one following page.

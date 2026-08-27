@@ -29,7 +29,8 @@ def test_result_figure_builds_only_from_completed_artifact_shapes(tmp_path: Path
         encoding="utf-8",
     )
     lifecycle.write_text(
-        "median_host_lifecycle_inflation\n1.5\n",
+        "median_host_lifecycle_inflation,median_enclosing_event_inflation\n"
+        "1.5,1.01\n",
         encoding="utf-8",
     )
     module.build_figure(holdout, multiplicity, lifecycle, output)

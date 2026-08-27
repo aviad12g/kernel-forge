@@ -11,7 +11,7 @@ repository-code: "https://github.com/aviad12g/kernel-forge"
 license: MIT
 preferred-citation:
   type: conference-paper
-  title: "Auditing LLM-Generated GPU Kernel Claims with Contract-Aware Holdout Re-Evaluation"
+  title: "Auditing Speedup Claims for GPU Kernels from Language Models"
   authors:
     - family-names: Cohen
       given-names: Aviad

@@ -1,116 +1,95 @@
-\section{Prespecified artifact contract}
+\section{Artifact and analysis details}
 
 The executable protocol is stored in
-\code{configs/workshop2026\_holdout\_protocol.yaml}. Task selection writes a
-checksum-frozen JSON manifest, a compact CSV, and a SHA-256 digest before candidate
-generation. Candidate manifests bind each source file to the frozen task
-manifest, exact prompt and response hashes, configured model string, and the
-provider-returned model field when available. Screening freezes one winner per
-task in a second checksummed manifest before confirmation begins.
-
-Each worker artifact contains policy and verification records, process identity,
-environment metadata, adaptive launch counts, cache-buffer size, randomized
-method order, input-snapshot hash, per-block CUDA-event latency, and clock/power
-snapshots. The analysis script consumes only those records and writes the
-screening winner set, aggregate promotion summary, process-cluster intervals,
-corrected p-values, promotion labels, and selection-optimism estimates.
+\code{configs/workshop2026\_holdout\_protocol.yaml}. Before generation, task
+selection writes a checksummed JSON manifest and a compact CSV. Candidate
+manifests bind each source file to the task manifest. They preserve prompt and
+response hashes, model identifiers, and provider metadata when available.
+Screening freezes each selected winner in a second checksummed manifest before
+confirmation. Worker records capture policy and verification outcomes, process
+and environment metadata, launch counts, cache size, method order, input hashes,
+block latency, clocks, and power. Analysis reads only these records.
 
 \paragraph{Control gate and correctness matrix.}
 
-Seven fresh calibration processes compare persistent eager with an identical
-wrapper and with a semantically identical wrapper containing calibrated extra
-GPU work. The gate requires the null median ratio in $[0.995,1.005]$, no null
-promotion beyond the 2\% practical margin, and detected slowdown in
-$[0.02,0.08]$. A separate lifecycle ablation covers the first selected task per
-family, capped at eight, and requires three complete disposable processes per
-task, ten blocks per process, synchronized host
-end-to-end timing, and an enclosing CUDA-event diagnostic. Failure or absence of
-any required control blocks screening and invalidates affected claims.
+Seven fresh calibration processes compare persistent eager execution with an
+identical wrapper and a wrapper that adds calibrated GPU work. The gate requires
+a null median ratio in $[0.995,1.005]$, no null promotion beyond 2\%, and a
+detected slowdown in $[0.02,0.08]$. A separate lifecycle study covers the first
+selected task in each family, capped at eight. Each task requires three complete
+processes and ten blocks per process. Timing includes synchronized host latency
+and an enclosing CUDA event. A failed control blocks screening.
 
-Across the 24 lifecycle process rows, synchronized-host inflation had median
-1.053 and IQR $[0.998,1.114]$; enclosing-event inflation had median 1.0001 and
-IQR $[0.9919,1.0019]$. A 20,000-sample task-cluster bootstrap, resampling the
-eight tasks while retaining their three process rows, gave intervals
-$[0.950,1.557]$ and $[0.992,1.212]$, respectively. These broad intervals expose
-task heterogeneity; the ablation establishes a timing-boundary mechanism rather
-than a population-wide effect size.
+Across the 24 process rows, host inflation had median 1.053 and IQR
+$[0.998,1.114]$. CUDA event inflation had median 1.0001 and IQR
+$[0.9919,1.0019]$. A task bootstrap with 20,000 samples resampled the eight tasks while
+retaining the three rows for each sampled task. It produced intervals
+$[0.950,1.557]$ and $[0.992,1.212]$. Their width shows task heterogeneity. The
+ablation identifies a timing boundary mechanism, not a population effect size.
 
-Correctness uses seeds 1103, 2207, 3301, 4409, and 5519. Every case checks two
-executions on the same logical input, exact nested output structure, shape,
-dtype, output-to-input and output-to-output alias patterns, input effects,
-NaN/+Inf/-Inf masks, and official task tolerances. The runtime policy then
-requires an observed Triton launch and rejects high-level ATen compute outside
-the allocation allowlist. These checks do not substitute for task-specific
-distribution, layout, or high-precision accumulation oracles.
+Correctness uses seeds 1103, 2207, 3301, 4409, and 5519. Every case executes the
+same logical input twice. Checks cover nested structure, shape, dtype, aliases,
+input effects, nonfinite masks, and official tolerances. Runtime policy requires
+an observed Triton launch and rejects ATen compute outside the allocation
+allowlist. Separate oracles remain necessary for task specific distributions,
+layouts, and accumulation behavior.
 
 \paragraph{Controlled multiplicity artifact contract.}
 
-The easy RQ2 manifest freezes 20 deterministic template sources and metadata
-files for each of \code{bias\_relu}, \code{residual\_add\_relu},
-\code{bias\_gelu}, and \code{rmsnorm\_small} before timing. The near-threshold
-manifest separately freezes 20 delayed variants per task. Each adds a fixed
-number of Triton copy passes from the first tensor input into an otherwise
-unused scratch allocation, preserving the base output; fractional work units
-copy an input prefix. Three calibration
-processes select eight candidates per task inside the prespecified
-$[0.98,1.04]$ window; calibration is excluded from primary estimates, and all
-selected candidates receive one screening and seven confirmation processes.
-Two earlier grid-design calibrations did not advance to primary screening and
-remain disclosed as design provenance. Reports preserve candidate counts,
-apparent and confirmed rates, per-task winners, and median selection optimism.
-Neither curve is inferred from the three-candidate KernelBench study.
+The easy RQ2 manifest freezes 20 deterministic templates for each of
+\code{bias\_relu}, \code{residual\_add\_relu}, \code{bias\_gelu}, and
+\code{rmsnorm\_small}. The parity manifest freezes 20 delayed variants per task.
+Each variant adds a fixed number of Triton copy passes from the first input into
+unused scratch without changing the output. Fractional work units copy an input
+prefix. Three calibration processes select eight candidates per task in the
+$[0.98,1.04]$ window. Calibration is excluded from the estimates. Each selected
+candidate receives one screening process and seven confirmation processes. Two
+earlier grids remain as design provenance because they did not reach screening.
+Reports preserve counts, rates, winners, and median selection optimism. None is
+inferred from the KernelBench candidate pool.
 
 \paragraph{Promotion-margin sensitivity.}
 
-The 2\% margin remains the prespecified primary threshold. A post-hoc sensitivity
-check over 0\%, 1\%, 2\%, 3\%, and 5\% changes no RQ1 conclusion: all ten valid
-KernelBench winners remain below eager at every threshold. For the four frozen
-near-threshold winners, one screen-only promotion appears at 1\%, 2\%, and 3\%;
-all four clear parity in both stages, while none clears 5\%.
+The primary threshold remains 2\%. A post hoc check considers 0\%, 1\%, 2\%,
+3\%, and 5\%. It changes no RQ1 conclusion because all 10 KernelBench winners
+remain below eager. Among the four parity stress test winners, one screening
+promotion fails confirmation at 1\%, 2\%, and 3\%. All four clear parity in both
+stages, and none clears 5\%.
 
 \paragraph{Historical audit boundary.}
 
-The 17-page OpenKernelForge report remains an evaluator audit and implementation
-record. Historical KernelBench candidates and profiler rows are retained there
-for provenance. They are excluded from the corrected paper's performance tables.
-The internal fused8 summary remains usable only for the fixed observations whose
-artifacts survived; the full 160-candidate screening-to-confirmation frequency is
-not reconstructed from aggregate summaries.
+The OpenKernelForge report has 17 pages of evaluator audit and implementation
+details. Historical candidates and profiler rows remain for provenance but do
+not enter this paper's performance tables. The fused8 summary supplies only
+fixed observations with surviving artifacts. Aggregate summaries cannot recover
+the full 160 candidate screening and confirmation frequency.
 
 \paragraph{Candidate funnel and compiler rung.}
 
-The 144 generated candidates partition into 77 static-policy failures, zero
-contract-only failures, 9 numerical or repeat-correctness failures, 28 candidate
-compile/runtime failures, 27 full-gate passes, and 3 candidates not evaluated
-because their task's compiler baseline exhausted memory. These categories are
-mutually exclusive. Compiler baselines materialized for 47/48 selected tasks.
-Among the 10 frozen valid-task winners, 1 exceeded compiler parity and the 2\%
-compiler margin at screening; that candidate was 1.826$\times$ versus compiler
-but 0.937$\times$ versus eager. A separate seven-process RTX A4500 check reused
-the frozen source and confirmed a 2.001$\times$ median candidate-versus-compile
-ratio; process medians ranged from 1.993$\times$ to 2.003$\times$. Runtime
-excludes compile cost, while compile-and-first-call latency is preserved.
+The 144 generated candidates form mutually exclusive categories. Static policy
+rejects 77. Nine fail numerical or repeat correctness, and 28 fail during
+compilation or execution. A total of 27 pass every gate. Three do not reach
+evaluation because their task's compiler baseline exhausts memory. No candidate
+fails only an output contract. Compiler baselines complete for 47 of 48 tasks.
+One of the 10 selected winners clears compiler parity and the 2\% margin at
+screening. It reaches 1.826$\times$ versus the compiler but 0.937$\times$ versus
+eager. A separate check across seven A4500 processes reuses the frozen source and
+confirms a median of 2.001$\times$ versus the compiler. Process medians range from
+1.993$\times$ to 2.003$\times$. Runtime excludes compile cost. Latencies for
+compilation and the first call remain preserved.
 
 \paragraph{Completed artifact set.}
 
-The corrected holdout contains 48 screening tasks, 70 winner-confirmation
-process records, and 249 checksum-ledger entries. The easy multiplicity study
-contains four screening records, 28 all-candidate confirmation processes, and a
-67-entry ledger. The accepted near-threshold campaign contains 12 calibration,
-4 screening, and 28 confirmation process records; its 94-file ledger verifies
-without error. Calibration passed in seven processes with null ratio
-0.999998 and detected slowdown 0.0563. The lifecycle gate passed all 24 required
-process rows. The original holdout and easy grid used 2.091 recorded worker-hours
-on the Tesla T4; the accepted near-threshold v3 campaign used 0.368 worker-hours
-on the RTX A4500. A same-GPU A4500 replication of the easy grid added 32
-complete worker records and 0.424 recorded worker-hours, preserving 1.0 apparent
-and confirmed rates at every budget. The compiler check added seven complete
-fresh-process records and 0.015 recorded worker-hours. The submission build rejects pending-evidence markers, checks
-the main matter against the strict four-page limit, and bundles the official,
-unmodified \code{neurips\_2026.sty}.
-
-\paragraph{Reviewer artifact.}
-
-Source, executable protocols, derived tables, and release instructions are
-available at \url{https://github.com/aviad12g/kernel-forge}. The corresponding
-release attaches the checksummed campaign records used by this paper.
+The holdout contains 48 screening tasks, 70 confirmation records, and 249 ledger
+entries. The easy study has four screening records, 28 confirmation processes,
+and 67 ledger entries. The parity study has 12 calibration records, four
+screening records, 28 confirmation records, and a verified ledger of 94 files.
+Calibration passes in seven processes with null ratio 0.999998 and detected
+slowdown 0.0563. The lifecycle gate passes all 24 required rows. The holdout and
+easy grid use 2.091 recorded T4 worker hours. The parity study uses 0.368 A4500
+worker hours. Replication on the same A4500 adds 32 records and 0.424 hours while
+preserving 1.0 screening and confirmation rates at every budget. The compiler
+check adds seven records and 0.015 hours. The build rejects pending evidence,
+enforces four main pages, and bundles the original \code{neurips\_2026.sty}.
+The reviewer release at \url{https://github.com/aviad12g/kernel-forge} includes
+source, protocols, derived tables, instructions, and checksummed records.

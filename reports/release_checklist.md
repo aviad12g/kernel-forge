@@ -99,5 +99,8 @@ Use this checklist before publishing the repository, sharing a report bundle, or
 - [x] `CITATION.cff` identifies the software and workshop paper.
 - [x] Reduced sanitized artifact bundle selected; model credentials, caches, and unrelated files are excluded.
 - [x] Frozen deterministic candidate restoration is fail-closed on source and metadata SHA-256 values.
+- [x] Final prose audit completed with no semicolon chains or decorative dashes in the paper body.
+- [x] All 12 workshop citation keys map to primary-source BibTeX entries.
+- [x] Final table, figure, bibliography, and appendix layout visually checked page by page.
 
 Current release posture: the completed corrected campaign and four-page paper are ready for external review. The paper reports a bounded re-evaluation result, not a full KernelBench or SOTA claim. The public repository includes an MIT license and citation metadata; the release bundle is restricted to sanitized, checksummed campaign evidence.

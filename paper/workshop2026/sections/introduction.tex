@@ -1,39 +1,40 @@
 \section{Introduction}
 
-LLM-based systems can generate many plausible GPU kernels for one tensor
-program. The system then selects a candidate using measured latency. This makes
-evaluation part of the search algorithm: as the candidate budget grows, so does
-the chance of selecting a favorable timing fluctuation. Reusing that measurement
-as final evidence produces a systems analogue of test-set overfitting. A second
-risk comes from the evaluator itself. Incorrect state initialization, model
-construction inside timed regions, or permissive fallback paths can create a
-large apparent speedup without a better kernel.
+Systems that synthesize GPU kernels may produce many implementations for one
+tensor program. They commonly time each candidate and retain the fastest. The
+same latency observation then serves as both a search signal and evidence for
+the chosen kernel. Larger candidate pools increase the chance of selecting a
+favorable fluctuation. Reusing that observation for the final claim resembles
+test set overfitting.
 
-Existing kernel benchmarks emphasize correctness and performance over practical
-baselines~\citep{kernelbench2025,zhang2026kernelbenchverified,lange2025robustkbench},
-while recent harness work stresses constrained execution and artifact
-archival~\citep{shui2026harness}. Systems measurement research has separately
-shown that small experimental choices can reverse performance
-conclusions~\citep{mytkowicz2009wrongdata,curtsinger2013stabilizer}. We connect
-these concerns through a promotion protocol for generated kernels. The protocol
-uses one dataset to screen candidates and fresh process-level data to confirm a
-frozen winner.
+The evaluator creates a second source of risk. Incorrect state initialization
+can invalidate the comparison. Constructing a reference model inside the timed
+region can inflate its latency. A permissive fallback can bypass the intended
+kernel altogether. Each error can produce an apparent speedup without better
+GPU code.
 
-We ask three questions with separate evidence paths. \textbf{RQ1:
-repeatability.} Across a corrected KernelBench subset, how many valid tasks,
-screening wins, and independently confirmed wins remain under a fixed
-three-candidate budget? \textbf{RQ2: selection bias.} Across an easy
-deterministic grid and a calibrated near-threshold fused8 stress test, how do
-apparent and independently confirmed wins change with candidate budget?
-\textbf{RQ3: evaluator validity.} In a
-separate disposable-process ablation, how much apparent speedup is created by
-reconstructing and transferring a reference model inside the measured call?
+KernelBench and recent extensions evaluate correctness and speed against
+practical baselines~\citep{kernelbench2025,zhang2026kernelbenchverified,lange2025robustkbench}.
+Harness research also stresses constrained execution and artifact
+preservation~\citep{shui2026harness}. Systems measurement work has shown that
+small experimental choices can reverse a performance conclusion
+~\citep{mytkowicz2009wrongdata,curtsinger2013stabilizer}. We connect these lines
+of work through a promotion protocol for generated kernels. One set of data
+screens candidates. Fresh processes then confirm the selected winner.
 
-The contribution is an evaluation design rather than a generation model: a
-contract-valid persistent lifecycle with frozen provenance; screen-then-confirm
-timing across randomized paired blocks and fresh processes; fail-closed null,
-known-slowdown, and lifecycle controls; and an artifact ledger that makes both
-the candidate and evaluator auditable.
+We ask three questions. \textbf{RQ1: repeatability.} Under a fixed budget of
+three candidates, how many valid KernelBench tasks produce a screening win and
+an independently confirmed win? \textbf{RQ2: selection bias.} How does the gap
+between screening and confirmation change with candidate budget in an easy
+control and a calibrated parity stress test? \textbf{RQ3: evaluator validity.}
+How much apparent speedup arises when the reference model is rebuilt and moved
+to the GPU inside the measured call?
+
+\system{} contributes an evaluation design. It uses persistent modules with
+frozen provenance. Randomized paired blocks support screening, while fresh
+processes provide confirmation. Null, slowdown, and lifecycle controls must pass
+before performance claims are enabled. A checksum ledger preserves the evidence
+needed to audit both the candidate and the evaluator.
 
 The claim ladder is deliberately strict:
 \[
@@ -44,9 +45,9 @@ The claim ladder is deliberately strict:
 \]
 Each arrow is a separate empirical claim.
 
-Recent verifier studies show that kernel correctness requires more than a
-single numerical comparison~\citep{shah2026contractgrade,li2026correctslow}.
-Accordingly, our protocol treats correctness, output contracts, lifecycle
-validity, and performance as distinct gates. The historical fused8 example is
-motivating evidence only. The corrected campaign reported here passed its
-prespecified control gates and is derived from checksummed raw artifacts.
+Recent verifier studies show that one numerical comparison is not enough to
+establish kernel correctness~\citep{shah2026contractgrade,li2026correctslow}.
+Our protocol therefore treats output contracts, numerical correctness,
+lifecycle validity, and speed as distinct gates. The historical fused8 example
+is only a motivation. The reported campaign passed its control gates and is
+derived from checksummed records.

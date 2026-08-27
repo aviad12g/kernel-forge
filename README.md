@@ -1,40 +1,73 @@
 # OpenKernelForge
 
-OpenKernelForge is an evaluation harness for generated Triton-kernel claims, not a kernel-generation leaderboard. It combines contract-aware correctness checks, paired CUDA-event timing, independent confirmation, evaluator controls, compiler baselines, and checksummed artifacts. The formal four-page workshop paper, *Auditing LLM-Generated GPU Kernel Claims with Contract-Aware Holdout Re-Evaluation*, is available at [`paper/workshop2026/openkernelforge_workshop2026.pdf`](paper/workshop2026/openkernelforge_workshop2026.pdf). The longer historical audit report remains at [`paper/openkernelforge_paper.pdf`](paper/openkernelforge_paper.pdf).
+OpenKernelForge audits performance claims for Triton kernels produced by
+language models. It checks task contracts, measures candidates with paired CUDA
+events, confirms selected winners in fresh processes, and preserves checksummed
+evidence. The four page paper, *Auditing Speedup Claims for GPU Kernels from
+Language Models*, is available at
+[`paper/workshop2026/openkernelforge_workshop2026.pdf`](paper/workshop2026/openkernelforge_workshop2026.pdf).
+The longer historical audit report remains at
+[`paper/openkernelforge_paper.pdf`](paper/openkernelforge_paper.pdf).
 
-The current thesis is deliberately narrow:
+The central claim is narrow:
 
-> Repeatability-aware CUDA-event benchmarking changes which Triton kernel speedups should be considered stable and provides a useful default evaluation layer for LLM-generated GPU kernels.
+> Fresh process confirmation and explicit evaluator controls can change the
+> speedup claim supported by a generated kernel search.
 
-This repository is not a KernelBench submission, not a trained model release, and not a SOTA claim.
+This is a bounded evaluation study. It does not report a trained model, a full
+KernelBench result, or a benchmark record.
+
+## Workshop Evidence
+
+The workshop paper reports three connected analyses:
+
+- **External holdout.** The corrected evaluator screened 141 Gemini candidate
+  records on 48 performance-blind KernelBench L1 tasks. A total of 27 candidates
+  passed every gate and covered 10 tasks. None of the selected task winners beat
+  eager by the prespecified 2% margin in either screening or confirmation.
+- **Candidate multiplicity.** An easy deterministic control produced no false
+  promotions. A separate parity stress test produced three screening wins at
+  `K=8`; two survived confirmation. The four-task interval includes zero, so the
+  result demonstrates a failure mode without estimating its population rate.
+- **Evaluator lifecycle.** Rebuilding the reference inside the measured call
+  inflated synchronized host latency by 1.053x at median. The enclosing CUDA
+  event ratio remained 1.0001.
+- **Compiler comparison.** One frozen candidate confirmed at 2.001x versus
+  `torch.compile max-autotune` across seven A4500 processes while remaining
+  below eager.
+
+Historical results from the invalid KernelBench adapter remain available as an
+evaluator audit. They are not combined with the corrected campaign.
 
 ## What This Project Is
 
-OpenKernelForge provides the infrastructure needed to study generated GPU kernels without relying on one-off timing results. Its main contribution is a methodology and artifact discipline for evaluating generated-kernel speed claims:
+OpenKernelForge studies generated GPU kernels without relying on one timing
+sample. Its main contribution is a measurement method and an artifact record:
 
 - task definitions with PyTorch references and deterministic input generation
 - candidate extraction, conservative AST policy checks, and trusted in-process loading
 - correctness verification before benchmarking
 - PyTorch eager and optional `torch.compile` comparisons
-- candidate-level JSONL logging with prompts, responses, source, errors, and benchmark summaries
+- candidate JSONL records with prompts, responses, source, errors, and benchmark summaries
 - deterministic Triton template baselines
-- repeatability reports for top candidates
+- confirmation reports for selected candidates
 - curated dataset export for later manual review
 - technical reports and artifact-preservation tooling
 
-The completed workshop campaign uses the corrected official `ModelNew` lifecycle on a performance-blind 48-task KernelBench L1 subset. Of 141 evaluated candidate records, 27 passed the full policy, contract, correctness, runtime, and timing gate, covering 10 tasks. None of the 10 frozen task winners exceeded eager by the prespecified 2% margin in screening or seven-process confirmation. An easy deterministic fused8 grid found no multiplicity-driven false promotion on either the original T4 or a same-GPU RTX A4500 replication. A separate calibrated near-threshold stress test produced three apparent wins and two confirmed wins at `K=8`; `bias_gelu` fell from 1.0271x to 1.0001x. The four-task interval includes zero, so this is a bounded mechanism demonstration rather than a population estimate. One frozen winner was also confirmed at 2.001x versus `torch.compile max-autotune` across seven fresh A4500 processes while remaining below eager. Historical KernelBench pilot rows from the invalid adapter are retained only as an evaluator-audit case study and are not merged with the corrected results.
-
 ## Why Repeatability Matters
 
-GPU kernel timing is noisy. In this project, some single-run wins disappeared when top candidates were rebenchmarked. That changed the interpretation of the results:
+The evidence is deliberately mixed. The easy control produced no false
+promotion. Near parity, one of three screening winners failed confirmation. A
+historical deterministic `bias_relu` template also moved from 1.029x in one run
+to a repeated median of 0.976x. These observations motivate a claim ladder:
 
-- correctness did not imply speed
-- single-run speedups were sometimes unstable
-- deterministic templates remained a strong baseline
-- template-guided prompting produced useful optimization data but did not automatically improve performance
-- repeat-stable wins were much rarer and more informative than single-run wins
+- task contract and numerical correctness
+- speed versus `torch.compile`
+- speed versus eager execution
+- confirmation in fresh processes
 
-The goal is to make these distinctions explicit before claiming a generated kernel is faster.
+The studies do not claim that language model speedups are generally fragile.
+They show why each rung needs separate evidence.
 
 ## System Overview
 

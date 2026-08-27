@@ -39,7 +39,7 @@ def test_workshop_source_uses_official_style_and_separate_main_label() -> None:
     main = (paper / "main.tex").read_text(encoding="utf-8")
     assert "\\usepackage[sglblindworkshop]{neurips_2026}" in main
     assert "Workshop review draft. Not submitted." in main
-    assert "Auditing LLM-Generated GPU Kernel Claims" in main
+    assert "Auditing Speedup Claims for GPU Kernels from Language Models" in main
     assert (paper / "submission.tex").read_text(encoding="utf-8").startswith(
         "\\def\\okfsubmissionupload"
     )
@@ -52,14 +52,15 @@ def test_workshop_paper_reports_completed_corrected_results() -> None:
         path.read_text(encoding="utf-8")
         for path in sorted((ROOT / "paper" / "workshop2026").rglob("*.tex"))
     )
+    normalized = " ".join(source.split())
     assert "measurements are pending" not in source
     assert "pendingcampaign" not in source
-    assert "Every frozen winner was below eager" in source
-    assert "all 80 deterministic candidates" in source
-    assert "three of four task winners" in source
+    assert "All 10 selected winners" in normalized
+    assert "All 80 deterministic candidates" in normalized
+    assert "three of four task winners" in normalized
     assert "1.0001$\\times$" in source
-    assert "0.368 worker-hours" in source
-    assert "2.091 recorded worker-hours" in source
-    assert "not inferred from the KernelBench pool" in source
-    assert "77 failed static policy" in source
+    assert "0.368 A4500 worker hours" in normalized
+    assert "2.091 recorded T4 worker hours" in normalized
+    assert "None is inferred from the KernelBench candidate pool." in normalized
+    assert "Static policy rejects 77." in normalized
     assert "1.826$\\times$" in source

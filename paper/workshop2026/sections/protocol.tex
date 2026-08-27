@@ -1,65 +1,68 @@
-\section{Contract-aware holdout confirmation}
+\section{Evaluation protocol}
 
-\paragraph{Lifecycle and correctness.}
+\paragraph{Task lifecycle and correctness.}
 Official KernelBench tasks define a reference \code{Model} and expect a
-persistent \code{ModelNew}. We instantiate both from the same frozen constructor
-arguments with restored RNG state and move them to the GPU before warmup. Source,
-initialization, and before/after state hashes preserve provenance. Candidates
-must pass static policy, five seeded input generations, repeated execution,
-output-tree, alias, input-effect, special-value, shape, dtype, and official
-tolerance checks. A pre-timing \code{TorchDispatchMode} audit rejects high-level
-ATen compute and requires an observed Triton launch. These checks are contract
-guardrails, not a security sandbox.
+persistent \code{ModelNew}~\citep{kernelbench2025}. We instantiate both from the
+same frozen constructor arguments. We restore the random state and move both
+modules to the GPU before warmup. Source, initialization, and state hashes record
+provenance. Candidates face static policy checks and five seeded input cases.
+Verification covers repeated execution, exact output structure, aliasing, input
+effects, special values, shape, dtype, and official tolerances. Before timing, a
+\code{TorchDispatchMode} audit rejects high level ATen compute and requires an
+observed Triton launch~\citep{tillet2019triton}. These checks enforce the task
+contract. They are not a security sandbox.
 
-\paragraph{Performance-blind selection.}
+\paragraph{Task selection.}
 The study uses official KernelBench L1 commit \code{423217d9}. Before candidate
-generation, memory preflight selected 48 tasks by deterministic
-family-round-robin with lexical within-family order and an 8~GiB known-residency
-cap. The original target of 50 was amended before manifest freeze: 49 of 100
-tasks met the unchanged cap, the next tier began at 20~GiB, and one feasible
-task was reserved for the excluded-task shakedown. No candidate or timing field
-informed the amendment.
+generation, a memory preflight selected 48 tasks. Selection used a deterministic
+round robin across families and lexical order within each family. The cap was
+8~GiB of known resident memory. We amended the original target of 50 before the
+manifest was frozen. Only 49 of 100 tasks met the cap, and the next memory tier
+began at 20~GiB. One feasible task was reserved for a shakedown that did not
+enter the results. No candidate or timing field informed this amendment.
 
-\paragraph{Screening and confirmation.}
+\paragraph{Paired screening and fresh confirmation.}
 For task $t$, candidate $c$, process $r$, and paired block $b$, define
 \begin{equation}
 z_{tcrb}=\log(\widetilde T^{\mathrm{eager}}_{trb}/
 \widetilde T^{c}_{tcrb}),
 \end{equation}
-where each $\widetilde T$ is per-launch CUDA-event latency on the same input
-snapshot. Twenty randomized paired blocks screen three candidates per task in
-one process. We freeze the candidate with the largest median $z$; tasks with no
-valid candidate remain explicit \textsc{invalid} rows. The winner then receives
-20 blocks in each of seven fresh processes with new seeds. Processes are split
-into separately invoked waves of four and three, separated by at least 30
-minutes on the same GPU and software fingerprint. Each interval adapts its
-launch count to at least 1.5 ms; method order is randomized and cache state is
-perturbed identically with a read-write buffer sized from reported L2 capacity.
-Compile cost is separated from runtime, and promotion is paired against eager.
+where each $\widetilde T$ is a per launch CUDA event latency on the same input
+snapshot~\citep{nvidiaCudaEvents}. One process screens three candidates per task
+with 20 randomized paired blocks. We freeze the candidate with the largest
+median $z$. Tasks with no valid candidate remain explicit \textsc{invalid} rows.
+The selected winner then receives 20 blocks in each of seven fresh processes.
+Each process uses new seeds. Four processes run in the first wave and three in
+the second, with at least 30 minutes between waves on the same GPU and software
+stack. Every interval adapts its launch count to cover at least 1.5~ms. Method
+order is randomized. A read and write buffer sized from the reported L2 capacity
+perturbs cache state in the same way for both methods. Compile cost is recorded
+separately from runtime~\citep{ansel2024pytorch2}. Promotion is measured against
+eager execution.
 
-The practical margin is $\delta=0.02$. This fixed protocol default was chosen
-before timing to require a nontrivial practical gain rather than parity; it was
-not calibrated post hoc to the observed T4 noise. Primary outcomes are valid-task,
-screening-win, and confirmed-win counts; false-promotion fraction; and median
-screening-to-confirmation optimism with a task-bootstrap interval. A secondary
-process-cluster analysis uses a one-sided lower bound, centered bootstrap test,
-and Benjamini--Hochberg correction. Exact seeds, resampling rules, telemetry,
-precision settings, and failure behavior are fixed in the executable protocol
-and summarized in the appendix.
+The practical margin is $\delta=0.02$. We fixed this default before timing to
+require a meaningful gain over parity. It was not calibrated to the observed T4
+noise. Primary outcomes are valid tasks, screening wins, confirmed wins, false
+promotions, and median screening to confirmation optimism with a task bootstrap
+interval. A secondary process analysis uses a one sided lower bound, a centered
+bootstrap test, and Benjamini--Hochberg correction. The executable protocol fixes
+the seeds, resampling rules, telemetry, precision, and failure behavior. The
+appendix summarizes these choices.
 
-\paragraph{Controls and multiplicity.}
-Seven-process calibration compares eager with an identical wrapper and a
-calibrated extra-work wrapper. A separate 24-process lifecycle ablation measures
-reference reconstruction and transfer with synchronized host latency and an
-enclosing CUDA-event diagnostic. Missing or failed controls block performance
-claims. RQ2 uses two deterministic fused8 regimes. An easy grid freezes and
-confirms 20 candidates per task for $K\leq20$. A separate stress test freezes
-20 delayed variants per task, uses three disjoint calibration processes to
-select eight variants within a predeclared $[0.98,1.04]$ speedup window, then
-excludes calibration and screens and confirms all 32 selected candidates. Its
-delayed variants preserve the base output while copying the first input into
-unused scratch with calibrated Triton passes; fractional work units copy a
-prefix. Its
-seven confirmation processes begin at least 30 minutes after screening, and
-4,000 resamples estimate budgets $K\in\{1,2,3,5,8\}$. The two regimes use
-separate artifacts and GPUs and are not inferred from the KernelBench pool.
+\paragraph{Controls and candidate multiplicity.}
+Seven process calibrations compare eager execution with two controls. The first
+is an identical wrapper. The second adds a known amount of GPU work. A separate
+lifecycle study uses 24 processes to measure reference reconstruction and
+transfer with both synchronized host latency and an enclosing CUDA event.
+Performance claims are disabled when a required control is absent or fails.
+
+RQ2 uses two deterministic fused8 regimes. The easy regime freezes and confirms
+20 candidates per task for $K\leq20$. The parity stress test also freezes 20
+variants per task. Each variant preserves the base output and adds calibrated
+Triton copy work into unused scratch. Fractional work units copy a prefix of the
+first input. Three calibration processes select eight variants per task inside
+the declared $[0.98,1.04]$ window. Calibration data do not enter the estimates.
+All 32 selected candidates receive screening and seven confirmation processes.
+Confirmation starts at least 30 minutes after screening. We use 4,000 resamples
+to estimate budgets $K\in\{1,2,3,5,8\}$. The two regimes use different artifacts
+and GPUs. Neither is inferred from the KernelBench candidate pool.

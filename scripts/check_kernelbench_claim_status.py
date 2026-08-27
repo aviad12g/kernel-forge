@@ -34,9 +34,9 @@ FORBIDDEN_STALE_PHRASES = [
 
 REQUIRED_TEXT = {
     "README.md": [
-        "historical KernelBench pilot rows",
-        "not merged with the corrected results",
-        "None of the 10 frozen task winners exceeded eager",
+        "Historical results from the invalid KernelBench adapter",
+        "They are not combined with the corrected campaign",
+        "None of the selected task winners beat eager",
     ],
     "paper/overleaf/sections/abstract.tex": [
         "post-hoc adapter audit",
@@ -54,10 +54,10 @@ REQUIRED_TEXT = {
         "No winner crossed the 2% eager margin",
     ],
     "paper/workshop2026/sections/abstract.tex": [
-        "27 of 141",
-        "none of the frozen task winners exceeded eager",
-        "three of four tasks appeared above the margin",
-        "only two confirmed",
+        "Of 141 evaluated Gemini candidates, 27 pass every gate",
+        "No selected task winner clears",
+        "screening promotes three of four task winners",
+        "but only two confirm",
     ],
 }
 
